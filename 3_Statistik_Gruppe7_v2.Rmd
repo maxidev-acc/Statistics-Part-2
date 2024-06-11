@@ -27,33 +27,65 @@ After training: 1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31
 Hatte das Training irgendeinen Effekt? Sollte die Firma, die das Labor betreibt, die Mitarbeiter anderer Labors zu einem solchen Training schicken, um ihre mittlere Arbeitszeit zu verringern? Beantworten Sie diese Fragen auf dem 5% und 1% Niveau.
 
 ```{r}
-before <- c(1.36, 1.37, 1.29, 1.22, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
+before <- c(1.36, 1.37, 1.29, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
 after <- c(1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
 summary(before)
 summary(after)
 ```
 ```{r}
+   
+library(stats) 
 
-  hist(before,main = paste("Before"),freq = T, xlab = "Values");      lines(density(before))
-  qqnorm(before, main = paste("Before"))
-  qqline(before,col=2,lwd=2)
-  abline(h=median(before))
-  abline(h=mean(before),col=3)
-  boxplot(before, horizontal = T, main = paste("Before"))
+before <- c(1.36, 1.37, 1.29, 1.22, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
+after <- c(1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
+
+# Histogram and Q-Q plot for 'before' vector
+par(mfrow=c(2, 2)) # Set up the plotting area
+
+# Histogram for 'before'
+hist(before, main="Histogram of Before Data", xlab="Before")
+
+# Q-Q plot for 'before'
+qqnorm(before, main="Q-Q Plot of Before Data")
+qqline(before, col="red")
+boxplot(before)
+
+ecdf_func <- ecdf(before)
+   
+plot(ecdf_func, xlab="Before", ylab="Cumulative Probability",  
+     main="Empirical Cumulative Distribution Function")
+
+
+
+# Histogram for 'after'
+hist(after, main="Histogram of After Data", xlab="After")
+
+# Q-Q plot for 'after'
+qqnorm(after, main="Q-Q Plot of After Data")
+qqline(after, col="red")
+boxplot(after)
+
+ecdf_func2 <- ecdf(before)
+   
+plot(ecdf_func2, xlab="After", ylab="Cumulative Probability",  
+     main="Empirical Cumulative Distribution Function")
+
+par(mfrow=c(1, 1)) # Reset plotting area
+
+shapiro.test(before)
+shapiro.test(after)
+
   
 ```
-```{r}
- hist(after,main = paste("After"),freq = T, xlab = "Values");      lines(density(before))
-  qqnorm(after, main = paste("After"))
-  qqline(after,col=2,lwd=2)
-  abline(h=median(after))
-  abline(h=mean(after),col=3)
-  boxplot(after, horizontal = T, main = paste("After"))
-```
 
 
-Für diese Fragestellung kann ein parametrischer Test durchgeführt werden, da wir annehmen, dass die Messzeiten eines Mitarbeiters einer Normalverteilung folgen.  
-Sind die Daten normalverteilt können parametrischen Tests wie der t-Test, die ANOVA oder die Pearson-Korrelation durchgeführt werden.
+
+  ** Für diese Fragestellung kann ein parametrischer Test durchgeführt werden, da wir annehmen, dass die     Messzeiten eines Mitarbeiters einer Normalverteilung folgen.  
+Sind die Daten normalverteilt können parametrischen Tests wie der t-Test, die ANOVA oder die             Pearson-Korrelation durchgeführt werden.**
+
+Im ersten Schritt muss prizipiell geprüft werden, ob ein paramterischer (Anova, t-test) oder ein nichtparametrischer test (willocoxon oder cruskal wallis test) verwendet werden darf. Dazu ahben wir die Daten als Histogram , Boxplot , QQPLOT und Ecdf dargestellt. Das Histogram lässt aufgrund der wenigen Datenpubnkte keine eindeutige Identifizieurng als Normalverteilung zu, allerdings 
+
+
 
 Für die erste Hypothese fragen wir uns, ob das Training für den Mitarbeiter einen Effekt hatte.
 Dabei stellen wir folgende Nullhypothese auf, die keinen Unterschied zwischen den Mittelwerten der zwei Trainingszeiten feststellen soll:
