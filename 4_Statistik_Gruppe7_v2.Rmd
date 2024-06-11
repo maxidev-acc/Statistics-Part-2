@@ -1,0 +1,284 @@
+---
+title: "Hausübung 4"
+author: "Reutterer Maximilian, Sattler Lukas, Weinzierl Jakob"
+date: "2023-11-26"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+Für alle Beispiele gelten folgende Aufgabenstellungen:
+• Überprüfen Sie alle erforderlichen statistischen Voraussetzungen für die Gültigkeit dieses Modells
+mtihilfe der quality plots der Residuen und gegebenenfalls Scatterplots.
+• Führen Sie eine Modellselektion durch und wählen anhand statistischer Kriterien ein optimales Modell
+aus. Argumentieren Sie anhand Kriterien für die Signifkanz von Koeffizienten und gegebenenfalls
+zusätzlich von Modellen.
+• Schreiben Sie das Regressionsmodell und die angepasste Modellgleichung des optimalen Modells explizit
+an.
+• Interpretieren Sie die Werte die Koeffizienten im Sachzusammenhang.
+
+**Datentransformation**
+
+Wählen Sie den Datensatz UN aus der library car. Filtern Sie erst ’NA’ mit der Funktion na.omit. Erklären
+Sie dann infant mortality durch gross domestic product. Explorieren Sie die Daten, bevor Sie ein Modell
+anpassen.
+
+Folgende Vorraussetzungen müssen für ein lineares Regressionmodell erfüllt sein.
+  Das Modell hat keinen systematischen Fehler.
+  Die Fehlervarianz ist fur alle Beobachtungen gleich groß (homoskedastisch).
+  Die Komponenten des Fehlerterms sind nicht korreliert.
+  Der Modellfehler sei normalverteilt.
+
+Um dies zu überprüfen, werden aus dem Datensatz "UN" zuerst alle NA-Werte verworfen, eine lineare Regression erstellt und mittels diverser Plots überprüft.
+
+```{r}
+library(car)
+summary(UN)
+
+df <- data.frame(UN)
+invisible(na.omit(df))
+
+gdp <- df$ppgdp
+im <- df$infantMortality
+plot(gdp ~ im)
+boxplot(gdp~im)
+fmB <- lm(gdp ~ im)
+plot(lm(formula = gdp~im))
+
+```
+
+Auf den Plots ist zu erkennen, dass unsere Variablen diese Kriterien nicht erfüllen. Anhand des Residuenplots kann man erkennen, dass das Modell einen systematischen Fehler aufweist. An dem QQ-PLot erkennt man, dass der Modellfehler nicht normalverteilt ist. 
+Dementsprechend werden die Daten transformiert. Auf dem Plot erkennt man, dass der Zusammenhang in etwa einer Exponentialfunktion entspricht, weswegen die Daten logarithmiert werden. 
+
+Dann wird eine Summary dieses Modells erstellt.
+
+```{r}
+gdp <- log(df$ppgdp)
+im <- log(df$infantMortality)
+boxplot(gdp~im)
+plot(lm(formula = gdp~im))
+summary(lm(formula = gdp~im))
+fmA <- lm(gdp ~ im)
+summary(fmA)
+
+```
+
+Durch den Output der Summarys erhalten wir folgende Kennzahlen zu dem Modell:
+
+Der Mittlere Fehler der Residuen beträgt -0.055. 
+Für den Intercept bzw. Alpha wird ein Wert von 12,033 mit einem p-Wert von <2e-16 vorgeschlagen.
+Für das Beta wird ein Wert von -1.24 mit einem p-Wert von <2e-16 vorgeschlagen.
+
+Damit erhalten wir die Parameter für die Modellierung eines linearen Zusammenhangs. 
+  $$y(i) = alpha + beta * x$$
+Mit diesem Modell können 76,5% der Varianz (R-Squared) erklärt werden. Durch das Logarithmieren haben wir ein robustes Modell erhalten, um den Zusammenhang zwischen GDP und Infant Mortality darstellen zu können.
+
+```{r}
+curve(12.03359 -1.24220 * x, from =0, to = 10, n=40, xlab = "GDP log()", ylab = "infantMortality (log)")
+```
+\pagebreak
+
+**Schweiz**
+
+Wir kehren zurück zu den Variablen “Fertility”, “Agriculture”, “Education”, “Catholic” und “Infant. Mortality”
+aus dem R Datensatz swiss des R package utils. Passen Sie für die oben genannten Variablen ein Modell an,
+das Education durch die übrigen Variablen erklärt, soweit dies zulässig ist.
+
+```{r} 
+library(ggplot2)
+library(GGally)
+
+Swiss <- swiss
+str(Swiss)
+summary(Swiss)
+Swiss <- Swiss[,-3] #remove "Examination"
+str(Swiss)
+```
+
+```{r} 
+ggpairs(Swiss)
+```
+In der Scatterplot-Matrix zeigt sich, dass Education stark signifikant mit Fertility und Agriculture negativ korreliert ist.
+Bei Catholic und infant mortality lässt sich keine Korrelation feststellen.
+
+Nun sehen wir uns die Residual Plots an.
+
+```{r}
+education_lm1 <- lm(Education ~ ., data=Swiss)
+summary(education_lm1)
+plot(education_lm1)
+
+```
+Man sieht das "V. De Geneve" sowohl im QQ-Plot als auch für Leverage weit außerhalb liegt. Wir entfernen diesen Wert daher, um einen besseren fit zu bekommen. Ebenso sieht man in der Summary, dass der Wert für Infant Mortality nicht signifikant ist, daher wird diese Spalte entfernt. 
+
+```{r}
+education_lm2 <- lm(Education ~ . -Infant.Mortality, data=Swiss[-c(45),])
+plot(education_lm2)
+summary(education_lm2)
+```
+
+Wir bekommen nun mit summary die Multiple Regression (ohne Infant.Mortality und "V. De Geneve"):
+Das R² ist 62.16% und damit niedriger als jenes der ersten Anpassung, bei der Infant Mortality und "V. De Geneve" nicht entfernt wurden. Wir wählen daher education_lm1 als Modell aus, welches mit 73.05% eine
+bessere Modellanpassung hat.
+
+Das bedeutet unser Modell ist: 
+Education = 49.99 + (-0.52) * Fertility + (-0.23) * Agriculture + 0.08 * Catholic + 0.28 * Infant.Mortality
+mit R² = 73.05%
+
+Die Aussage dieser Formel ist, dass die Education (% der Wehrpflichtigen mit mehr als Grundschulausbildung) theoretisch bei 49.99% läge, wenn alle anderen Werte Null sind (= Intercept bzw. alpha).
+
+Die Werte für Katholizismus und Säuglingssterblichkeit spielen eine untergeordnete Rolle.
+Es zeigt sich daher, man über die Geburtenrate und die Beschäftigungsrate in der Landwirtschaft Vorhersagen zur
+formalen Ausbildung der männlichen Wehrpflichtigen in der Schweiz im Untersuchungszeitraum treffen.
+Höhere Beschäftigung in der Landwirtschaft geht meist mit einem geringeren Urbanisierungsgrad und einer
+geringeren Entwicklung einer Region einher. Auch in anderen Ländern zeigt sich, dass die Geburtenrate negativ mit dem 
+Einkommen korreliert ist und das Einkommen positiv mit der Ausbildung.
+\pagebreak
+
+
+**USA**
+
+Wir kehren zurück zu den Variablen “Population”, “Income”, “Illiteracy”, “Life.Exp”, “Murder”, “HS Grade” und “Frost” aus dem R Datensatz state.x77. Passen Sie für die oben genannten Variablen ein lineares Modell (lm) an, das “Murder” durch die übrigen Variablen erklärt, soweit dies zulässig ist.
+
+Es wird das Datenset state.x77 verwendet. Anhand des Scatterplots kann man erkennen, dass alle Variablen bis auf Income signifikant mit Murder korrelieren. Es wird also ein LM-Modell mit allen Variablen erstellt (Area und Frost werden aufgrund der Fragestellung verworfen).
+
+```{r}
+library(utils)
+library("PerformanceAnalytics")
+
+df <- data.frame(state.x77)
+summary(df)
+invisible(na.omit(df, "NA"))
+my_data <- df[, c(1,2,3,4,5,6)]
+chart.Correlation(my_data, histogram=TRUE, pch=19)
+modell1 <- lm(formula = Murder ~ . - Area - Frost, data = df)
+plot(modell1)
+summary(modell1)
+```
+Nun werden die Summary und die Residuenplots untersucht. Die Residuenplots deuten auf keinen systematischen Fehler hin, der Residuenfehler folgt approximativ einer Normalverteilung. 
+Nur der Datenpunkt "Alabama" könnte als Ausreißer gedeutet werden. Es scheint auch kein Datenpunkt ein Hebelpunkt zu sein. 
+Der R-Squared Wert beträgt 0.763, was für eine gute Modellanpassung spricht. Income hat ein p von 0.983469 und wird daher für die weitere Modellbildung entfernt.
+
+```{r}
+
+dfnew <- df[-19, ]
+
+modell1 <- lm(formula = Murder ~ . - Area - Frost -Income, data = dfnew)
+plot(modell1)
+summary(modell1)
+
+```
+\pagebreak
+
+**Lake Huron**
+
+Wir kehren zurück zum Datensatz “LakeHuron”. Passen Sie ein Modell an, das den Zeittrend modelliert.
+Überprüfen Sie alle erforderlichen statistischen Voraussetzungen für die Gültigkeit dieses Modells mtihilfe der
+quality plots der Residuen.
+
+```{r}
+huron <- data.frame(feet=as.matrix(LakeHuron), date=time(LakeHuron))
+huron["year"] <- 1875:1972
+huron <- subset(huron, select = -c(date))
+str(huron)
+summary(huron)
+
+plot(x = huron$year, y=huron$feet, type="l", main="Zeitreihe des Wasserstandes in ft")
+
+plot(density(huron$feet))
+hist(huron$feet, freq=F, main="Dichtefunktion für Wasserstand in ft von Lake Huron (1875-1972)")
+lines(density(huron$feet))
+
+shapiro.test(huron$feet)
+```
+Man erkennt, dass die Daten annähern Normalverteilt (und daher unimodal) sind. Auch der Shapiro-Wilk normality test zeigt eine Normalverteilung mit einem p-Wert von 0.3271 an.
+
+```{r}
+huron_lm1 <- lm(feet ~ year, data=huron)
+plot(huron_lm1)
+```
+Man sieht im Plot Residuals vs. Fitted deutlich, dass die Punkte nicht zufällig liegen, sondern Sinus-artig um die Linie verlaufen. Eine Voraussetzung der vier am Anfang genannten Voraussetzungen für ein lineares Regressionsmodell, nämlich jenes, dass die Komponenten des Fehlerterms nicht korrelieren, trifft hier nicht zu. Die anderen 3 Voraussetungen sind hier erfüllt.
+
+Im QQ-Plot sieht man keine Ausreißer oder gegen Normalverteilung sprechende Werte.
+Und keiner der Werte deutet darauf hin, als Hebel zu fungieren.
+Wir setzen trotzdem ein lineares Modell an, dass die Änderung des Pegels über die Zeit zeigt:
+
+```{r}
+model <- lm(formula = feet ~ year, data=huron)
+summary(model)
+plot(huron$year, huron$feet, type="l")
+abline(model, col="red")
+```
+Dieses Lineare Modell zeigt, dass der Wasserstand des Sees über die Jahre kontinuierlich sinkt.
+Der jährliche Rückgang beträgt gemäß unserem Modell 0.024 feet, also etwa 7.3 mm. 
+Findet der Rückgang weiterhin so schnell statt, dann wäre der See in etwa 2400 Jahren ausgetrocknet.
+  
+\pagebreak
+
+**Pima Indians**
+
+Laden Sie den Datensatz ‘Pima.tr’ aus der library ‘MASS’. Ermittle ein logistisches Regressionsmodell, dass das Auftreten von Diabetes (‘type’) durch die übrigen unabhängigen Variablen Alter (age), Anzahl der Schwangerschaften (npreg), BMI, Glukosespiegel (glu), Blutdruck (bp), familiäre Häufung von Diabetesfällen (ped) und Hautfaltendickemessung am Oberarm (skin) erklärt. Schreibe die Modellgleichung an und interpretiere die Werte der Koeffizienten im Kontext.
+
+Ermitteln Sie die prädiktive Qualität des Modells mithilfe einer Receiver Operating Characteristic (ROC) Kurve. Führen Sie auch die False Positive, False Negative, True Positive und True Negative Raten in einer Tabelle (Konfusionsmatrix) an.
+
+Eine Bevölkerung von Frauen im Alter von mindestens 21 Jahren, von Pima-Indianer-Herkunft und wohnhaft in der Nähe von Phoenix, Arizona, wurde gemäß den Kriterien der Weltgesundheitsorganisation auf Diabetes getestet. Die Daten wurden vom US National Institute of Diabetes and Digestive and Kidney Diseases gesammelt. 
+
+
+```{r}
+library(pROC)
+library(MASS)
+
+data <- Pima.tr
+str(data)
+summary(data)
+
+df <- data.frame(Pima.tr)
+modell <- glm(type~ .,data=df,family=binomial(link = "logit"))
+summary(modell)
+
+#neu classification table
+data.predictions <- predict(modell, type = "response")
+classification <- data.frame(response =df$type)
+```
+
+Mittels der glm Funktion wird ein logistisches Modell aus den Prädikatoren modelliert. Folgendes Modell wird durch die errechneten Koeffizienten beschrieben:
+
+$$type = -9.773062 + (0.04118 * age) + (0.10318 * npreg) + (0.08362 * bmi) + (0.03212 * glu) + (-0.00477 * bp) + (-0.00192 * skin) + (1.82041 * ped)$$
+Die Analyse der Residuenplots entfällt bei einer logistischen Regressionsanalyse. Aus der Summary können die Koeffizienten des Modells abgelesen werden. Hierbei sieht man, dass nur Glucose und der familiäre Hintergrund signifikant sind.
+
+```{r}
+predictions <- predict(modell, type = "response")
+roc_curve <- roc(Pima.tr$type, predictions)
+plot(roc_curve,main ="ROC Kurve -- Logistische Regression")
+
+auc_value <- auc(roc_curve)
+cat("AUC (Area Under the Curve):", auc_value, "\n")
+```
+Ein AUC-Wert (Area Under the Curve) von 0.8503, deutet darauf hin, dass die Variable "type" (diabetic yes or no) auch von anderen Variablen abhängt.
+
+```{r}
+#Wir setzen als ja/nein-Kriterium
+
+threshold <- 0.5
+data.pred.class <- ifelse(data.predictions >= threshold, 1, 0)
+table(data.pred.class)
+table(Pima.tr$type)
+classification.matrix <- table(PRED = data.pred.class, ACTUAL = Pima.tr$type)
+classification.matrix
+
+colnames(classification.matrix) <- c("Neg", "Pos")
+rownames(classification.matrix) <- c("Neg", "Pos")
+addmargins(classification.matrix)
+
+```
+Zusammenfassend kann man aus der erstellten Tabelle (Konfusionsmatrix) folgende Informationen entnehmen:
+
+True negative = 116 
+True positive = 39 
+False negative = 29 
+False positive = 16
+

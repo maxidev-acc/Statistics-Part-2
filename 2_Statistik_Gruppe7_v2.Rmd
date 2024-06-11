@@ -1,0 +1,349 @@
+---
+title: "Hausübung 2"
+author: "Reutterer Maximilian, Sattler Lukas, Weinzierl Jakob"
+date: "2023-11-26"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+**Aufgabe 1**
+
+Explorieren und visualisieren Sie die Variablen ”Fertility”, ”Agriculture”, ”Education”, ”Catholic” und ”Infant. Mortality” aus dem R Datensatz swiss des R package utils. Betrachten Sie vorerst jede Variable als separate Stichprobe fur eindimensionale Exploration (ziehen Sie die Bedeutung der Variablen im Sachkontext in Betracht). Fur jede Variable: 
+• wählen Sie sinnvolle Schätzer für Lokation, Variation, Schiefe and Gewicht in den Rändern.
+• Geben Sie dem Nutzer die Möglichkeit zwischen unterschiedlichen graphischen Darstellungen zu wechseln. Erklären Sie die Zusammenhänge und Eigenschaften der Daten, die
+sich aus diesen Visualisierungen erkennen lassen.
+– Sind die Daten symmetrisch/schief?
+– Haben die Daten schwere Ränder?
+– Bieten Sie robuste und nichtrobuste Lagemaße und Skalenmaße im Vergleich oder zur Auswahl an.
+– Sind die Daten (approximativ) normalverteilt?
+Was lässt sich über die Zusammenhänge zwischen den Variablen aussagen? (Tipp: scatterplot matrix.)
+
+```{r}
+library("moments")
+library("Hmisc")
+
+data = data.frame(swiss)
+summary(data)
+
+df <- swiss
+i= 1
+for (k in df){
+  mycols <- colnames(df)
+  
+  i<-i+1
+}
+
+for (k in (1:6)) {
+  
+  print(mycols[k])
+  print(shapiro.test(data[,k]))
+  hist(data[,k],main = paste(mycols[k]),freq = F, xlab = "Values"); lines(density(data[,k]))
+  qqnorm(data[,k], main = paste(mycols[k]))
+  qqline(data[,k],col=2,lwd=2)
+  abline(h=median(data[,k]))
+  abline(h=mean(data[,k]),col=3)
+  boxplot(data[,k], horizontal = T, main = paste(mycols[k]))
+  print(skewness(data[,k]))
+  print(kurtosis(data[,k]))
+  print(sd(data[,k])) 
+}
+
+library("PerformanceAnalytics")
+my_data <- swiss[, c(1,2,4,5,6)]
+chart.Correlation(my_data, histogram=TRUE, pch=19)
+
+```
+Die gesammelten Daten beziehen sich auf 47 französischsprachige "Provinzen" um das Jahr 1888.
+
+Alle Variablen außer "Fertility" geben den Anteil an der Bevölkerung an.
+
+Die Untersuchungsvariable "Examination", die ursprünglich in dem swiss Datenset inkludiert ist, hängt mit Education, Agriculture, Fertility und Catholic stark zusammen, wodurch diese Variable als Regressor für unsere Analyse nicht berücksichtig wurde.
+
+Fertility: Dieser Parameter ist unimodal verteilt. In den meisten Kantonen liegt eine Hohe Fertilität (CSFM) vor. Der Plot lässt auf eine approximative Normalverteilung schließen. Der Kurtosis-Wert von 3,4 bestätigt diese Beobachtung. Der Skwnesswer beträgt -0.47, was eine leichte Linksschiefe impliziert, die auch auf dem Boxplot erkennabar ist. Auch auf dem QQ-Plot ist erkennbar, dass auf der linken Seite ein schwerer Rand existiert. Der Mittelwert ist (beinahe) identisch zum Median, weshalb der Mittelwert als nicht-robustes Lagemaß verwendet werden kann. Das nicht-robuste Streumaß, die Standardabweichung, beträgt 12,49.
+
+Agriculture: Dieser Parameter deutet auf einen hohen Anteil an beschäftigten Männern in der Landwirtschaft hin. Bei diesem Parameter kann von keiner Normalverteilung ausgegangen werden. Der Parameter ist unimodal verteilt. Auf dem QQ-Plot sind keine Ausreißer erkennbar, jedoch weichen die Punkte von den theoretischen Quantilen einer Normalverteilung ab. Als robustes Lagemaß wird der Median verwendet, der 54,10 beträgt. 
+
+Education: Der Parameter Education beschreibt die Ausbildung von Männern, die über die Grundschule hinweg geht. Anhand des Boxplots kann man erkennen, dass dieser Parameter unimodal und stark rechtsschief ist. Die kontextuelle Interpretation dieser Verteilung lässt auf einen hohen Anteil an Männern mit geringer Bildung schließen. Der QQ-Plot zeigt schwere Ränder auf der rechten Seite. Für diesen Parameter empfiehlt sich ebenfalls der Median als robustes Lagemaß und beträgt 8,00. 
+
+Catholic: Dieser Parameter gibt die prozentuelle Zahl an Katholiken (C) in den Kantonen an, wobei die Anzahl an Protestanten 1-C beträgt. Dieser Parameter ist bimodal für Werte zwischen 0-10 und 90-100, was darauf hindeutet, dass Kantone entweder katholisch oder prostestantisch waren. Somit entfallen Median und arithmetisches Mittel als sinnvolle Lagemaße, was auch durch die Länge des Boxplots verdeutlicht wird. Die Interquartilsdistanz deckt beinahe den vollständigen Wertebereich ab. 
+
+Infant Mortality: Dieser Parameter gibt die Säuglingssterblichkeit an und wird definiert als "Lebendgeborene, die weniger als 1 Jahr leben". Dieser Parameter scheint approximativ normalverteilt zu sein, was im realen Kontext damit begründet wird, dass sich   Säuglingssterblichkeit in Kantonen, die medizinisch und entwicklungstechnisch nicht übermässig verschieden sind, um einen Mittelwert einpendelt. Der Kurtosis-Wert von 3,94 impliziert eine steilgipflige Normalverteilung. Auf dem QQ-Plot ist zu erkennen, dass (fast) alle Werte nahe der theoretischen Quantil-Linie lokalisiert sind. Am linken Rand ist ein Ausreißer erkennbar. Dennoch nehmen wir hier eine Normalverteilung an und analysieren mittels nicht-robusten Mittelwert von 19,94 und einer Standardabweichung von 2,91.
+
+**Korrelation der Parameter**
+  
+Korrelationsmatrix:
+Anhand der Korrelationsmatrix kann die Korrelation der einzelnen Parameter miteinander verglichen werden. Dabei korrelieren  Fertility~Education mit -0.66 und Agriculture~Education mit -0.64 negativ zueinander. Diese Entwicklung passt sozio-ökonomisch zu modernen Entwicklungen, wobei Länder mit steigender Bildung einen Geburtenrückgang zeigen. Auch der Rückgang von Männern in der Landwirtschaft geht mit steigender Bildung zurück, wobei dies auch mit steigenden technischen Innovationen zusammenhängen könnte. Aus dem Parameter "Catholic" lassen sich aufgrund der Bimodalität keine sinnvolle Korrelation mit anderen Parametern ableiten.
+\pagebreak
+
+
+**Aufgabe 2**
+
+Explorieren und visualisieren Sie die Variablen “Population”, “Income”, “Illiteracy”, “Life.Exp”, “Murder”, “HS Grade” und “Frost” aus dem R Datensatz state.x77. Betrachten Sie vorerst jede Variable als separate Stichprobe für eindimensionale Exploration (ziehen Sie die Bedeutung der Variablen im Sachkontext in Betracht). Fur jede Variable: 
+• wählen Sie sinnvolle Schätzer für Lokation, Variation, Schiefe and Gewicht in den Rändern.
+• Geben Sie dem Nutzer die Möglichkeit zwischen unterschiedlichen graphischen Darstellungen zu wechseln. Erklären Sie die Zusammenhänge und Eiegenschaften der Daten, die sich aus diesen Visualisierungen erkennen lassen.
+– Sind die Daten symmetrisch/schief?
+– Haben die Daten schwere Ränder?
+– Bieten Sie robuste und nichtrobuste Lagemaße und Skalenmaße im Vergleich oder zur Auswahl an.
+– Sind die Daten (approximativ) normalverteilt?
+Was lässt sich uber die Zusammenhänge zwischen den Variablen aussagen? (Tipp: scatterplot matrix.)
+
+```{r}
+data = data.frame(state.x77)
+summary(data)
+
+df <- state.x77
+
+i= 1
+for (k in data){
+  mycols <- colnames(df)
+  
+  i<-i+1
+}
+
+for (k in (1:7)) {
+  
+  print(mycols[k])
+  print(shapiro.test(data[,k]))
+  hist(data[,k],main = paste(mycols[k]),freq = F, xlab = "Values"); lines(density(data[,k]))
+  qqnorm(data[,k], main = paste(mycols[k]))
+  qqline(data[,k],col=2,lwd=2)
+  abline(h=median(data[,k]))
+  abline(h=mean(data[,k]),col=3)
+  boxplot(data[,k], horizontal = T, main = paste(mycols[k]))
+   print(skewness(data[,k]))
+  print(kurtosis(data[,k]))
+  print(sd(data[,k])) 
+}
+
+library("PerformanceAnalytics")
+my_data <- state.x77[, c(1,2,3,4,5,6,7)]
+chart.Correlation(my_data, histogram=TRUE, pch=19)
+```
+Der Datensatz "state.x77" besitzt 7 unterschiedliche Parametern zu den 50 Bundesstaaten der Vereinigten Staaten von Amerika, nämlich “Population”, “Income”, “Illiteracy”, “Life.Exp”, “Murder”, “HS Grade” und “Frost”.
+
+Population: Der Parameter ist die geschätzte Population der 50 US-Bundesstaaten im Jahr 1975. Die Verteilung im Histogramm ist unimodal, zeigt eine deutliche rechtsschiefe mit einem schweren Rand auf der rechten und einem leichter Rand auf der linken Seite. Auch im QQ-Plot ist diese Beobachtung ersichtlich. Eine Normalverteilung ist damit auszuschließen. Dieser wäre auch im Hinblick auf die flächenmässige Diskrepanz der Bundesstaaten nicht zu erwarten. Für eine derartige Verteilung eignet sich der nicht-robuste Mittelwert nicht. Hierbei ist der robuste Median zu wählen, mit dem Wert 2838. Das Boxplot-Diagramm ist hierbei eine sinvolle Illustration, die zeigt, dass in 5 US-Staaten die Bevölkerung stark über den anderen Staaten liegt. 
+
+Income: Der Income Parameter beschreibt das Pro-Kopf Einkommen. Dieser Wert ist approximativ normalverteilt. Die Punkte liegen dicht um die Normalverteilungsgerade des QQ-Plots, nur ein Ausreißer auf der rechten Seite ist erkennbar. Der Median und das arithmetische Mittel liegen nah beieinander, weshalb das arithmetische Mittel von 4436 mit einer Standardabweichung von 614.4699 sinnvolle Lage- und Streumaße sind.  
+
+Illiteracy:  Dieser Paramater gibt die prozentuelle Anzahl an Analphabeten an. Diese Verteilung ist rechtschief mit einem deutlichen schweren Rand auf der linken Seite. Die positive Skewness-Wert von 0.8437669 bestätigt die Rechtsschiefe. Das robuste Lagemaß Median scheint mit 0,95 hier der sinnvollste Lageschätzer, da das arithmetische Mittel von diesem um 20 Prozentpunkte abweicht. 
+
+Life.Exp: Dieser Parameter beschreibt die Lebenserwartung in Jahren. Es ist eine leichte Bimodalität zu erkennen. Es sind keine schweren Ränder ersichtlich. Als Lageschätzer wird aufgrund der Bimodalität der Median herangezogen, welcher 70.67 beträgt. Das arithmetische Mittel liegt zwar knapp mit 70.88 daneben, allerding ist dieses bei einer gegebenen Bimodalität zu verwerfen. Der Boxplot kann hierbei als sinnvolle Visualisierung der Daten-Streuung angesehen werden. 
+
+Murder: Murder gibt die Mord- und Totschlagrate pro 100.000 Einwohner an. Hier liegt ebenfalls eine bimodale Verteilung vor. Analog zu Life Exp. wird der Median mit 6.850 als zentraler Lageschätzer herangezogen. 
+
+HS Grade: Dieser Parameter gibt die prozentuelle Anzahl der High-School Absolventen an. Die Daten haben auf dem Histogramm eine bimodale Form, wobei der erste Peak nicht sehr stark ausgepägt ist. Auf dem QQ-Plot sieht man, dass die Werte von der Normalverteilungslinie abweichen. Der Shapiro-Wilk normality test hat für diesen Datensatz einen p-value = 0.04582, was die Nullhypothese (H0=Daten sind nicht normalverteilt) für das 5% Konfidenzniveau knapp verwirft. Es liegt demnach eine Normalverteilung vor mit einem Median von 53.25 als zentrales Lagemaß. 
+
+Frost: Dieser Parameter gibt die durchschnittlichen Tage unter 0 Grad Celsius zwischen 1931-1960 an. Laut Shapiro-Wilk normality test mit p-value = 0.05267, kann H0 (H0=Daten sind nicht normalverteilt) ganz knapp für das 5% Konfidenzniveau nicht verworfen werden. Auch der QQ-Plot und der Kurtosis-Wert mit -0.859056 sprechen für eine Normalverteilung. Das Histogramm lässt darauf schließen, dass es sich um eine unimodale Verteilung handelt mit einem kleinen zusätzlichen Peak im Bereich 0-25. Es empfiehlt sich der robuste Median als zentrales Lagemaß und die IQD als robustes Streumaß.
+
+**Korrelation**
+In der Korrelationsmatrix sind einige der Korrelationen hochsignifikant. So korrelieren Murder und Illiteracy mit 0,70 positiv zueinander. Auch ist die Life Exp mit Murderer negativ korreliert, wobei dies vermutlich auf die generellen Lebensumstände in den jeweiligen Bundesstaaten zurückzuführen ist (eine durchschnittliche Mord-Inzidenz von 7.378/100.000 wird sich dimensionstechnisch nicht auf die Lebenserwartung auswirken). Ebenfalls korrelieren mit 0,7 Murder ~ Illiteracy positiv zueinander.
+Dementgegen korreliert Illiteracy mit HS Grad mit -0,66 negativ, wobei dies aufgrund des deutlichen Zusammenhangs von Schulbildung und Analphabetismus eigentlich schon als Kausalität interpretiert werden kann. Es gibt jedoch auch hochsignifikante Korrelationen mit dem Parameter Frost, die jedoch keine logischen Interpretationen zulassen. (Frost~Illiteracy = -0.67***). 
+
+\pagebreak
+
+**Aufgabe 3**
+
+Explorieren und visualisieren Sie den Datensatz “LakeHuron” mit und ohne Berucksichtigung des Zeitreihenaspektes.
+• wählen Sie sinnvolle Schätzer fur Lokation, Variation, Schiefe and Gewicht in den Rändern.
+• Geben Sie dem Nutzer die Möglichkeit zwischen unterschiedlichen graphischen Darstellungen zu wechseln. Erklären Sie die Zusammenhänge und Eiegenschaften der Daten, die sich aus diesen Visualisierungen erkennen lassen.
+– Sind die Daten symmetrisch/schief?
+– Haben die Daten schwere Ränder?
+– Bieten Sie robuste und nichtrobuste Lagemaße und Skalenmaße im Vergleich oder zur Auswahl an.
+– Sind die Daten (approximativ) normalverteilt?
+
+```{r}
+
+library(moments)
+library(hrbrthemes)
+
+```
+
+Bei dem Datensatz "LakeHuron" handelt es sich um jährlich gemessenen Wasserstand in "feet" über den Zeitraum 1875-1972. Insgesamt enhält der Datensatz 98 Messdaten.
+
+```{r data, include=FALSE}
+par(mfrow=c(1,1))
+require(utils)
+data(LakeHuron)
+
+str(LakeHuron)
+summary(LakeHuron)
+min(LakeHuron)
+max(LakeHuron)
+
+mean(LakeHuron)
+sd(LakeHuron) 
+var(LakeHuron) 
+
+median(LakeHuron)
+IQR(LakeHuron) 
+ 
+skewness(LakeHuron)
+kurtosis(LakeHuron) 
+
+```
+
+```{r Plot over time, echo=FALSE}
+
+plot(LakeHuron, main="Lake Huron Wasserstand über den Zeitraum 1875-1972", xlab="Jahr", ylab="Wasserstand in feet")
+abline(h=mean(LakeHuron),col=2,lwd=2)
+
+```
+
+```{r Histogram, echo=FALSE}
+
+hist(LakeHuron,freq=F, main="Lake Huron relativer Wasserstand im Zeitraum 1875-1972", ylab="Relative Verteilung", xlab="Wasserstand in feet")
+lines(density(LakeHuron),col=2,lwd=2)
+
+```
+
+```{r boxplot, echo=FALSE}
+boxplot(LakeHuron, horizontal = T, main="Lake Huron Wasserstand im Zeitraum 1875-1972", xlab="Wasserstand in feet")
+stripchart(LakeHuron,           
+           method = "jitter", # Random noise
+           pch = 1,          # Pch symbol
+           col = 1,           # Color of the symbol
+           add = TRUE)
+
+```
+```{r QQplot, echo=FALSE}
+qqnorm(LakeHuron)
+qqline(LakeHuron,col=2,lwd=3)
+
+```
+Der Wasserstand variierte im Zeitraum 1875-1972 zwischen `r min(LakeHuron)` und `r max(LakeHuron)`, mit einem nicht-robusten Mittelwert von `r mean(LakeHuron)` und der Standardabweichung `r sd(LakeHuron)` bzw. dem robusten Median `r median(LakeHuron)` und der IQD `r IQR(LakeHuron)`.
+Beide Lagemaße sind sehr ähnlich, deshalb konnten keine Ausreisser in diesem Datenset festgestellt werden. Auch die zwei Streumaße Standardabweichung und IQD sind von den Werten her ähnlich. Die Verteilung ist unimodal, was aufgrund eines einzelnen Datenpeak festzustellen ist.
+
+Der Skewness-Wert von `r skewness(LakeHuron)` deutet auf eine linksschiefe Verteilung hin, was auch im Histogramm ersichtlich ist.
+Mit einem Kurtosis-Wert von `r kurtosis(LakeHuron)` kann eine flachgipflige, approximative Normalverteilung festgestellt werden, die auch im Histogramm und im QQ-Plot visuell bestätigt wird. Die Daten deuten auf einen linksseitigen, schweren Rand und einem rechtsseitigen, leichten Rand hin, was im QQ-Plot abzulesen ist. 
+\pagebreak
+
+**Aufgabe 4**
+
+Explorieren und visualisieren Sie den Datensatz Titanic. Wie beeinflussen Alter, Geschlecht und Klasse das Überleben? Finden Sie, wo sich Simpson’s Paradoxon zeigt und begründen Sie, woher dieser Effekt kommt.
+
+```{r titanic überblick}
+
+titanic_df <- as.data.frame(Titanic)
+ftable(titanic_df[1:4, 1:4])
+
+```
+
+```{r titanic, echo=FALSE}
+library(vcd)
+
+titanic_df <- as.data.frame(Titanic)
+titanic_df$Survived <- factor(titanic_df$Survived, levels=c("Yes", "No"))
+
+#Passagiere: Geschlecht, Alter, Klasse
+struct <- structable(~Sex+Age+Class, data=titanic_df)
+mosaic(struct, direction = c("v", "v", "h"), pop = FALSE, widthDetails(10), main="Aufteilung der Passagiere", gp=gpar(fill=c("lightblue", "pink")))
+labeling_cells(text = as.table(struct), margin = 0)(as.table(struct))
+
+#Überleben: Geschlecht
+struct <- structable(~Survived+Sex, data=titanic_df)
+mosaic(struct, direction = c("h", "v"), pop = FALSE, widthDetails(10), main="Überleben nach geschlecht", gp=gpar(fill=c("lightblue", "pink")))
+labeling_cells(text = as.table(struct), margin = 0)(as.table(struct))
+
+#Überleben: Alter
+struct <- structable(~Survived+Age, data=titanic_df)
+mosaic(struct, direction=c("h", "v"), pop = FALSE, widthDetails(10), main="Überleben nach Alter", gp=gpar(fill=c("lightblue", "pink")))
+labeling_cells(text = as.table(struct), margin = 0)(as.table(struct))
+
+#Überleben: Klasse
+struct <- structable(~Survived+Class, data=Titanic)
+mosaic(struct, direction=c("h", "v"), pop = FALSE, widthDetails(10), main="Überleben nach Klasse", gp=gpar(fill=c("pink", "lightblue")))
+labeling_cells(text = as.table(struct), margin = 0)(as.table(struct))
+```
+
+```{r titanic überlebenswahrschieinlichkeit klasse}, echo=FALSE}
+klasse1 <- 203/(122+203); klasse1
+klasse2 <- 118/(167+118); klasse2
+klasse3 <- 178/(528+178); klasse3
+crew <- 212/(673+212); crew
+
+```
+Dieser Datensatz enthält Informationen über das Schicksal der Passagiere auf der tödlichen Jungfernfahrt des Ozeandampfers "Titanic", zusammengefasst nach wirtschaftlichem Status (Klasse), Geschlecht, Alter und Überleben.
+
+Geschlecht
+Man kann im Mosaicplot "Aufteilung der Passagiere" erkennen, dass die meisten Passagiere männlich sind. Von den Männern sind mit Abstand die meisten Crew-Mitglieder oder in der dritten Klasse.
+Sieht man sich nun das Überleben nach Geschlecht an, so überleben in absoluten Zahlen fast gleich viele Männer wie Frauen. Vom Verhältnis sind mehr als 10x soviele Männer gestorben wie überlebt haben. Bei den Frauen haben etwa doppelt soviele überlebt wie gestorben sind.
+
+Alter
+Hier ist auch eine deutliche Differenz erkennbar. Etwa gleich viele Kinder haben überlebt wie gestorben sind. Bei den Erwachsenen ist das Verhältnis etwa 1:2 (Überlebt/Gestorben).
+
+Klasse
+Auch die Klasse hat die Überlebenswahrscheinlichkeit deutlich beeinflusst. In der ersten Klasse haben etwa 76% der Passagiere überlebt, in der zweiten Klasse 62%, in der dritten Klasse 25% und bei der Crew mit 24% am wenigsten.
+
+# Simpson's Paradoxon
+Das Simpson Paradoxon beschreibt einen Trend in Daten, der sich jedoch auflöst oder umkehrt, wenn die einzelnen Gruppen betrachtet werden. Die Ursache ist meist eine nicht betrachtete Störvariable oder eine unterschiedliche Gewichtung der Daten. In diesem Beispiel zeigt es sich in den Überlebenswahrscheinlichkeiten der Crew und dritten Klasse. 
+Auf den ersten Blick liegt die Überlebensrate für die dritte Klasse mit 25,21% etwas höher als jene der Crew mit 23,95%. Betrachtet man die beiden Klassen nach Geschlecht getrennt, sieht man, dass jeweils die Todesrate in der Crew höher liegt als in der Dritten Klasse:
+
+Überlebensrate:
+3rd Männer: 17,25%
+Crew Männer: 22,27%
+
+3rd Frauen: 45,91%
+Crew Frauen: 86,95%
+
+3rd Gesamt: 25,21%
+Crew Gesamt: 23,95%
+
+Dies lässt sich dadurch erklären, dass die Crew zu 97,40% aus Männern besteht und die Frauen eine äußerst hohe Überlebenswahrscheinlichkeit haben, während die dritte Klasse zu 72,24% aus Männern besteht. Der vergleichsweise viel höhere Frauenanteil hatte jedoch mit 45,91% noch immer eine recht hohe Überlebensrate, was den Gesamtschnitt nach oben ziehen konnte, während die 86,95% Überlebensrate der Crew-Frauen praktisch keine Auswirkung auf die Gesamtüberlebensrate der Crew hatte. 
+
+
+```{r simpsons paradoxon}
+
+ftable(Titanic)
+
+crewMAlive <- 192
+crewMDead <- 670
+crewMT <- crewMAlive + crewMDead
+
+crewFAlive <- 20
+crewFDead <- 3
+crewFT <- crewFAlive + crewFDead
+
+crewDead <- crewMDead + crewFDead
+crewAlive <- crewMAlive + crewFAlive
+
+thirdMAlive <- 13+75
+thirdMDead <- 35+387
+thirdMT <- thirdMAlive + thirdMDead
+
+thirdFAlive <- 14+76
+thirdFDead <- 17+89
+thirdFT <- thirdFAlive + thirdFDead
+
+thirdAlive <- thirdMAlive + thirdFAlive
+thirdDead <- thirdMDead + thirdFDead
+
+crewMT; crewFT;  crewMT + crewFT
+crewDead; crewAlive
+thirdMT; thirdFT; thirdFT+ thirdMT
+thirdDead; thirdAlive
+
+
+#Survival Rates
+
+#total
+ThirdSurvRate <- thirdAlive/(thirdAlive+thirdDead); ThirdSurvRate*100
+CrewSurvRate <- crewAlive/(crewAlive+crewDead); CrewSurvRate*100
+
+#third class sex
+ThirdMSurvRate <- thirdMAlive/(thirdMAlive+thirdMDead); ThirdMSurvRate*100
+ThirdFSurvRate <- thirdFAlive/(thirdFAlive+thirdFDead); ThirdFSurvRate*100
+
+#crew sex
+CrewMSurvRate <- crewMAlive/(crewMAlive+crewMDead); CrewMSurvRate*100
+CrewFSurvRate <- crewFAlive/(crewFAlive+crewFDead); CrewFSurvRate*100
+
+#Geschlechterverhältnis
+CrewVerhältnis <- crewMT/(crewMT+crewFT); CrewVerhältnis*100
+thirdVerhältnis <- thirdMT/(thirdMT+thirdFT); thirdVerhältnis*100
+
+```
