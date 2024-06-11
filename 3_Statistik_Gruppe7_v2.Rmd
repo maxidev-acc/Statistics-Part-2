@@ -1,0 +1,246 @@
+---
+title: "Hausübung 3"
+author: "Reutterer Maximilian, Sattler Lukas, Weinzierl Jakob"
+date: "2023-11-26"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+Für alle Übungen führen Sie als ersten Schritt eine Datenexploration durch, um die erforderlichen Annahmen des Tests zu Überprüfen. Dann entscheiden Sie, welche Test geeignet ist, um die Fragestellung zu beantworten und mit den gebenen Daten kompatibel ist. Schreiben Sie den Ansatz für das Test Problem (parametrisch, nichtparametrisch, resampling; welche Verteilungsannahmen an die Daten gelten), die Nullhypothese und Alternativhypothese explizit an.
+Aus dem Testoutput führen Sie den Wert der Teststatistik explizit an und welche Verteilung diese haben soll. Lesen Sie den p-Wert ab und argumentieren anhand dieses Wertes, welche Entscheidung Sie treffen.
+
+**Aufgabe 1**
+
+Ein Labor schickt seine Mitarbeiten zu einem Pipettiertraining und möchte
+anschließend testen, ob sich dieses ausgezahlt hat, indem die mittleren
+Zeiten zur Durchführen von 25 Pipettiervorgängen vor und nach dem
+Training gemessen werden.
+
+Before training: 1.36, 1.37, 1.29, 1.22, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37
+After training: 1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31
+
+Hatte das Training irgendeinen Effekt? Sollte die Firma, die das Labor betreibt, die Mitarbeiter anderer Labors zu einem solchen Training schicken, um ihre mittlere Arbeitszeit zu verringern? Beantworten Sie diese Fragen auf dem 5% und 1% Niveau.
+
+```{r}
+before <- c(1.36, 1.37, 1.29, 1.22, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
+after <- c(1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
+summary(before)
+summary(after)
+```
+
+Für diese Fragestellung kann ein parametrischer Test durchgeführt werden, da wir annehmen, dass die Messzeiten eines Mitarbeiters einer Normalverteilung folgen.  
+Sind die Daten normalverteilt können parametrischen Tests wie der t-Test, die ANOVA oder die Pearson-Korrelation durchgeführt werden.
+
+Für die erste Hypothese fragen wir uns, ob das Training für den Mitarbeiter einen Effekt hatte.
+Dabei stellen wir folgende Nullhypothese auf, die keinen Unterschied zwischen den Mittelwerten der zwei Trainingszeiten feststellen soll:
+
+$$H_0: \mu_{before} = \mu_{after}$$  
+Die alternative Hypothese, dass das Training einen Unterschied ausmachte, heißt:
+
+$$H_1: \mu_{before} \neq \mu_{after}$$  
+Wir verwenden einen paired t-Test, da die Messungen von einem Mitarbeiter durchgeführt wurden und wir den Vorher-Nachher-Effekt messen möchten.
+Da wir irgendeinen zeitlichen Effekt (schneller oder langsamer) testen möchten, wenden wir den t-Test in der two-tailed (zweiseitige) Variante an.
+
+```{r}
+t.test(before, after, paired=TRUE)
+```
+Der Resultat zeigt, dass die Test-Statistik einen Wert von t = 4.9322 hat und aufgrund des p-values von 0.0008109 die Nullhypothese (es gibt keinen Effekt) sowohl auf 5% als auch auf 1% Signifikanzniveau verworfen werden kann. Das Training hatte daher einen Effekt. 
+
+Für die zweite Fragestellung, ob die mittlere Arbeitszeit nach dem Training kürzer ist, stellen wir folgende Nullhypothese (Arbeitszeit ist nach dem Training nicht kürzer) auf:
+
+$$H_0: \mu_{before} \leq \mu_{after}$$  
+Die alternative Hypothese lautet dementsprechend: 
+$$H_1: \mu_{before} > \mu_{after}$$ 
+
+Da wir hier auf eine Seite testen wollen (Arbeitszeit wird schneller, nicht langsamer) wird der Test one-tailed durchgeführt.
+
+```{r}
+before <- c(1.36, 1.37, 1.29, 1.22, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
+after <- c(1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
+t.test(before,after,alternative = "greater", paired=TRUE)
+```
+Der p-Value bei diesem t-Test beträgt 0.0004055, wodurch auch hier die Nullhypothese sowohl auf 5% als auch auf 1% Signifikanzniveau verworfen werden kann. 
+Dies bedeutet, dass das Training einen Effekt zeigt und die mittlere Arbeitszeit verringert hat.
+\pagebreak
+
+**Aufgabe 2**
+
+Hatten auf der Titanic Frauen und Kinder eine signifikant (auf dem 1% Niveau) bessere Überlebenschance als Männer? (Tipp: Vergleichen Sie jeweils Frauen und Kinder separat.)
+
+Da es sich hier um das Vergleichen zweier binomial verteilter Proportionen handelt, werden wir einen Proportionen-Test durchführen. Dabei nehmen wir ein Konfidenzniveau von 1% an.
+
+Ob Frauen bzw. Kinder eine höhere Überlebenschance hatten als Männer, definieren wir die Nullhypothese folgendermaßen:
+$$H_0: P_{Frauen/Kinder} \leq P_{Männer}$$
+Die alternative Hypothese dazu lautet: 
+$$H_1: P_{Frauen/Kinder} > P_{Männer}$$  
+
+```{r}
+alle=apply(Titanic, c(3,4), sum); alle
+Kinder=apply(Titanic, c(3,4), sum)[1,]; Kinder
+
+FM=apply(Titanic, c(2,4), sum); FM
+Frauen=apply(Titanic, c(2,4), sum)[2,]; Frauen
+Männer=apply(Titanic, c(2,4), sum)[1,]; Männer
+
+```
+
+```{r}
+prop.test(c(Frauen["Yes"],Männer["Yes"]),c(sum(Frauen),sum(Männer)),alternative = "greater", conf.level = 0.99)
+prop.test(c(Kinder["Yes"],Männer["Yes"]),c(sum(Kinder),sum(Männer)),alternative = "greater", conf.level = 0.99)
+```
+
+Im Fall der Frauen beträgt die Test-Statistik (mit Chi-Quadrat Verteilung) 454.5. Mit einem p-value von < 2.2e-16 bei einem 1% Signifikanzniveau kann die Nullhypothese verworfen werden und daher hatten Frauen eine höhere Überlebenschance als Männer. 
+
+Bei den Kindern beträgt die Test-Statistik 54.16. Mit einem p-value von 9.24e-14 kann auch hier die Nullhypothese bei 1% Signifikanzniveau verworfen werden und daher hatten auch Kinder eine höhere Überlebenschance als Männer.  
+\pagebreak
+
+**Aufgabe 3**
+
+Ein Biologe vergleicht die mittleren Wachstumsraten einer Bakterienkultur auf einer Petrischale  über einen Zeitraum von 20 Minten minütlich. Es soll dabei untersucht werden, ob der Nährboden die Wachstumsrate gegenüber der durchschnittlich zu erwartenden Wachstumsrate von 1% fördert.
+
+
+```{r}
+t = 20 #minuten
+nährboden_rate <- c(0.146842, 0.156757, 0.091255, 0.063720, 0.148471, 
+            -0.045436, 0.150407, 0.077905, 0.077267, 0.026454, 
+            0.090700, 0.245384, 0.129650, 0.141617, 0.039957, 
+            0.165351, 0.029091, 0.073473, 0.189657, 0.123897)
+normal_rate <- 0.01
+```
+
+
+Zuerst werden die Daten visualisiert, um auf Normalverteilung zu prüfen und ein Shapiro-Wilk Test durchgeführt
+
+```{r}
+summary(nährboden_rate)
+hist(nährboden_rate, main="Wachstumsraten Nährboden")
+lines(density(nährboden_rate))
+
+boxplot(nährboden_rate, main="Wachstumsraten Nährboden", horizontal = T)
+qqnorm(nährboden_rate, main="Wachstumsraten Nährboden")
+qqline(nährboden_rate)
+
+shapiro.test(nährboden_rate)
+```
+Die Daten scheinen Normalverteilt zu sein, der Minimalwert könnte laut dem QQ-Plot ein Ausreißer sein.
+Der Shapiro-Wilk normality test zeigt einen p-Wert  0.916, die H0 (die Daten sind Normalverteilt) kann daher nicht verworfen werden.
+Daher können parametrische Tests angewendet werden. Es wird ein einseitiger, rechtsseitiger Test verwendet.
+
+Die Nullhypothese H0 lautet, die Wachstumsrate ist mit Nährboden gleich/geringer als die Normale mit 1%:
+$$H_0: \mu_{Nährboden} \leq \mu_{Normal}$$  
+
+Die Alternativhypothese H1 lautet, die Wachstumsrate ist höher als die Normale von 1%.
+$$H_1: \mu_{Nährboden} > \mu_{Normal}$$
+Es wird mit einem Signifikanz-Niveau von 0.05 gearbeitet.
+
+```{r}
+t.test(nährboden_rate, mu=normal_rate, conf.level = 0.95, alternative = "greater") #greater=mein mu ist größer als mu_0
+```
+Der Nährboden weist eine mittlere Wachstumsrate von 10,6% auf, deutlich über der Vergleichsrate.
+Die Datenexploration lässt den Schluss zu, dass die Daten Normalverteilt (und damit auch unimodal) sind, bestätigt durch einen Shapiro-Wilk normality test. Mittelwert und Median liegen eng beieinander, der QQ-Plot lässt keine schweren/leichten Ränder erkennen. Es wird daher der Mittelwert der normalverteilten Daten mit dem Vergleichswert der Wachstumsrate von 1% verglichen. Dazu kann man den parametrischen Einstichproben-t-Test anwenden, der eine Normalverteilung voraussetzt.
+
+Mit einem p-Wert von 1,744e-6 ist die Wahrscheinlichkeit, die H0 fälschlich zu verwerfen äußerst gering. Sie kann auf den Signifikanz-Niveaus von 5%, 1% und 0.1% verworfen werden.
+Das Ergebnis ist somit als stark signifikant zu werten. Der verwendete Test weist eine t-Verteilung auf. 
+Die Teststatistik ist 6,443 mit 19 Freiheitsgraden.
+\pagebreak
+
+**Aufgabe 4**
+
+Eine Genontologieanalyse wird durchgeführt, um den Anteil von Genen aus bestimmten Pfades (pathway) zu bestimmen, die an der Entwicklung von Krebs beteiligt sind. Um die Frage zu beantworten, werden 720 mögliche Gene in Betracht gezogen, von denen 696 in mehr als einer Studie gefunden wurden und daher glaubwürdig sind. Von diesen haben 413 mit der Krebsentwicklung zu tun. Berechnen Sie eine Schätzung und das zugehörige 95% bzw. 99% Konfidenzintervall für dieses Szenario. Testen Sie, ob der Anteil der beteiligten Genen sich signifikant gegenüber einer früheren Studie verändert hat, die 55% der Gene als beteiligt gefunden hat.
+
+
+Dies ist ein Proportionentest, da gefragt wird ob ein Gen beteiligt/nicht beteiligt ist.
+Die Fragestellung lautet, ob sich der Anteil  gegenüber einer vorigen Studie mit 55% VERÄNDERT hat.
+Wir führen daher einen zweiseitigen Proportionentest durch, der eine Binomialverteilung als Grundlage hat.
+
+Die Nullhypothese H0 lautet:
+$$H_0: p = p0$$ 
+Die Alternativhypothese H1 lautet:
+$$H_1: p \ne p0$$ 
+Die zu testenden Signifikanz-Niveaus sind 0.05 und 0.01.
+
+```{r}
+prop.test(413, 696, p = 0.55, alternative = c("two.sided"), conf.level = 0.95, correct = TRUE)
+prop.test(413, 696, p = 0.55, alternative = c("two.sided"), conf.level = 0.99, correct = TRUE)
+```
+Die Teststatistik X-squared ist 5.1207 mit einem Freiheitsgrad (df=1).
+Der p-Wert mit 0.02364 reicht nur aus, das erste Signifikanz-Niveau von 5% zu verwerfen, jedoch nicht jenes mit 1%, die Daten sind daher nur schwach signifikant. Es sind 59.33% der Gene an der Krebsentwicklung beteiligt. Dies ist innerhalb des 95% Konfidenzintervalls welches von 55.57% bis 63.00% reicht, aber außerhalb jenes des 99% KI (54.40% bis 64.10%).
+\pagebreak
+
+**Aufgabe 5**
+
+Bevor Sie einen Job annehmen, möchten Sie als Kandidat oder Kandidatin die Gehälter in den Firmen vergleichen, die beide bereit wären, Sie anzustellen. Folgende Gehälter können Sie aufgrund von online Transparenzvorgaben in Erfahrung bringen. 
+
+Erste Firma:
+4218.874 2323.970
+4104.761 3172.519 3058.287 2386.729 4405.709 2665.709 5326.124 2993.015
+5152.121 3164.876 2703.269 3837.005 2927.137 2847.995 3087.938 3063.339
+4697.341 5602.379 2992.996 5052.060 4095.423 1668.059 6268.097
+
+Zweite Firma:
+1888.252 2429.395 2062.037 1932.138 1788.335 2119.263
+2185.819 2173.098 2391.626 1576.546 1871.540 2405.640 2470.771 1879.237
+2181.048 2272.962 2174.767 1729.053 1119.993 2325.788 2112.610 2847.006
+1124.272 5320.000 4785.000
+
+Welche der Firmen bietet Ihnen das attraktivere Gehalt?
+
+```{r}
+
+library("moments")
+firma1 <-c(4218.874, 2323.970,
+4104.761, 3172.519, 3058.287, 2386.729 ,4405.709, 2665.709 ,5326.124, 2993.015,
+5152.121, 3164.876 ,2703.269 ,3837.005 ,2927.137 ,2847.995 ,3087.938, 3063.339,
+4697.341 ,5602.379 ,2992.996 ,5052.060, 4095.423, 1668.059, 6268.097)
+
+firma2 <- c(1888.252, 2429.395, 2062.037, 1932.138, 1788.335 ,2119.263,
+2185.819, 2173.098 ,2391.626, 1576.546, 1871.540, 2405.640, 2470.771, 1879.237,
+2181.048 ,2272.962 ,2174.767, 1729.053 ,1119.993 ,2325.788 ,2112.610, 2847.006,
+1124.272 ,5320.000, 4785.000)
+
+print(summary(firma1))
+print(summary(firma2))
+
+hist(firma1, breaks = 9, prob = TRUE)
+lines(density(firma1))
+qqnorm(firma1)
+qqline(firma1)
+qqnorm(firma2)
+qqline(firma2)
+
+
+hist(firma2, breaks = 9, prob = TRUE)
+lines(density(firma2))
+
+#Normalverteilung? Für eine Normalverteilung müsste der Kurtosis-Werte nahe 3 leigen
+print(kurtosis(firma1))
+print(kurtosis(firma2))
+
+
+#Standardabweichung
+sd(firma1)
+sd(firma2)
+```
+Ausgehend von der Summary, wo der Mittelwert von Firma 1 bei 3673 und von Firma 2 bei 2287 liegt, würde man man davon ausgehen, dass bei Firma 1 das Gehalt lukrativer ist.
+
+Um dies statistisch abzusichern, muss nun eine passende Teststatisik gewählt werden. Anhand des QQ-Plots kann man davon ausgehen, dass Firma 2 nicht normalverteilt ist. Firma 1 könnte eine Normalverteilung approximieren, wenn man die obersten und untersten 2 Ränder als Ausreißer interpretiert.
+
+Wir verwenden jedoch einen Wilcoxon-Test für nicht-parametrische Stichproben. Vorrausetzung ist, dass die Daten ordinal und die Stichproben gepaart sind. Es wird geprüft, ob es einen Unterschied in der zentralen Tendenz gibt.
+
+Die Nullhypothese H0 lautet, es gibt keinen Unterschied (in Bezug auf die zentrale Tendenz) in den beiden Gruppen Firma1 bzw. Firma2.
+Wir konkretisieren diese Hypothese noch dazu, dass wir darauf testen, ob die Werte von Firma 1 größer als die von Firma 2 sind.
+
+$$H_0: \mu_{1} \leq \mu_{2}$$ 
+Die Alternativhypothese H1 lautet dazu:
+
+$$H_1: \mu_{1} > \mu_{2}$$
+
+```{r}
+wilcox.test(firma1, firma2, alternative = "greater")
+```
+Aufgrund des signifikanten p-Values kann davon ausgegangen werden, dass ein zufällig ausgewählter Wert von Firma 1 in der Regel größer als ein Wert der Firma 2 ist. Daher verwerfen wir H0, und nehmen an, dass wir bei Firma 1 das höhere Gehalt bekommen.
