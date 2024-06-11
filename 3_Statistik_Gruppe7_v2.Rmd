@@ -32,6 +32,25 @@ after <- c(1.29, 1.25, 1.20, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
 summary(before)
 summary(after)
 ```
+```{r}
+
+  hist(before,main = paste("Before"),freq = T, xlab = "Values");      lines(density(before))
+  qqnorm(before, main = paste("Before"))
+  qqline(before,col=2,lwd=2)
+  abline(h=median(before))
+  abline(h=mean(before),col=3)
+  boxplot(before, horizontal = T, main = paste("Before"))
+  
+```
+```{r}
+ hist(after,main = paste("After"),freq = T, xlab = "Values");      lines(density(before))
+  qqnorm(after, main = paste("After"))
+  qqline(after,col=2,lwd=2)
+  abline(h=median(after))
+  abline(h=mean(after),col=3)
+  boxplot(after, horizontal = T, main = paste("After"))
+```
+
 
 Für diese Fragestellung kann ein parametrischer Test durchgeführt werden, da wir annehmen, dass die Messzeiten eines Mitarbeiters einer Normalverteilung folgen.  
 Sind die Daten normalverteilt können parametrischen Tests wie der t-Test, die ANOVA oder die Pearson-Korrelation durchgeführt werden.
