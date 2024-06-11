@@ -268,6 +268,13 @@ prop.test(c(Kinder["Yes"],Männer["Yes"]),c(sum(Kinder),sum(Männer)),alternativ
 Im Fall der Frauen beträgt die Test-Statistik (mit Chi-Quadrat Verteilung) 454.5. Mit einem p-value von < 2.2e-16 bei einem 1% Signifikanzniveau kann die Nullhypothese verworfen werden und daher hatten Frauen eine höhere Überlebenschance als Männer. 
 
 Bei den Kindern beträgt die Test-Statistik 54.16. Mit einem p-value von 9.24e-14 kann auch hier die Nullhypothese bei 1% Signifikanzniveau verworfen werden und daher hatten auch Kinder eine höhere Überlebenschance als Männer.  
+
+
+
+
+
+
+
 \pagebreak
 
 **Aufgabe 3**
