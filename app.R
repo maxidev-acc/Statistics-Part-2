@@ -86,27 +86,23 @@ ui <- fluidPage(
                              plotOutput("distPlot11"),
                              plotOutput("distPlot12"),     
                              
-                             
-                             
-                             
                              ),
             
                       
-            
-                    tabPanel("Aufgabe 4")
+                    tabPanel("Aufgabe 4",
+                             mainPanel(  
+                             titlePanel("Aufgabe 4 - Titanic"),          
+                             plotOutput("mosaicPlot"),
+                             selectInput("titanic", "Select Parameter", choices = c("Sex", "Class", "Age")),
                              
-                       
-                     
-                     
-                     ),
-            
-            
+                             plotOutput("mosaicPlot1"),
+                             ),
+                           ),
+          
           ),
-          
-          
            
       
-        )
+        ),)
         
     
     
@@ -234,10 +230,24 @@ server <- function(input, output) {
     })
     
     
+    output$mosaicPlot <- renderPlot({
+      # Load the Titanic dataset
+      data("Titanic")
+      
+      # Create a mosaic plot
+      mosaic(~ Class + Sex + Age + Survived, data = as.table(Titanic), shade = TRUE, legend = TRUE ,width  = 700, height = 700, unit ="px")
+    })
     
+    output$mosaicPlot1 <- renderPlot({
+    #Überleben: Klasse
+      j <-input$titanic
+      formula <- as.formula(paste("~ Survived +", j))
+      struct <- structable(formula, data=as.table(Titanic))
+      mosaic(struct, direction=c("h", "v"), pop = FALSE, widthDetails(10), main=paste0("Überleben nach ", input$titanic), gp=gpar(fill=c("lightblue", "pink")))
+      labeling_cells(text = as.table(struct), margin = 0)(as.table(struct))
+    })
     
-    
-    
+   
     
     
     
