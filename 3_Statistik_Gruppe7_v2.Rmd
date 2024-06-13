@@ -33,7 +33,7 @@ summary(before)
 summary(after)
 ```
 ```{r}
-  # Before TRIMMING
+
 library(stats) 
 
 before <- c(1.36, 1.37, 1.29, 1.22, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
@@ -70,8 +70,7 @@ plot(ecdf_func2, xlab="After", ylab="Cumulative Probability",
 
 par(mfrow=c(1, 1)) # Reset plotting area
 
-shapiro.test(before)
-shapiro.test(after)
+
 
   
 ```
@@ -81,56 +80,10 @@ shapiro.test(after)
   ** Für diese Fragestellung kann ein parametrischer Test durchgeführt werden, da wir annehmen, dass die     Messzeiten eines Mitarbeiters einer Normalverteilung folgen.  
 Sind die Daten normalverteilt können parametrischen Tests wie der t-Test, die ANOVA oder die             Pearson-Korrelation durchgeführt werden.**
 
-Im ersten Schritt muss prizipiell geprüft werden, ob ein paramterischer (Anova, t-test) oder ein nichtparametrischer test (willocoxon oder cruskal wallis test) verwendet werden darf. Dazu ahben wir die Daten als Histogram , Boxplot , QQPLOT und Ecdf dargestellt. Das Histogram lässt aufgrund der wenigen Datenpubnkte keine eindeutige Identifizieurng als Normalverteilung zu, allerding erkennt man jeweils den niedirgsten Wert als Ausreißer im QQplOt und der ECDF. Daher wurde dieser Wert entfernt und zur Unterstützung der Hypothese, dass eine normalverteilung in den Daten vorliegt, ein Shapiro test durchgeführt. 
+Im ersten Schritt muss prizipiell geprüft werden, ob ein paramterischer (Anova, t-test) oder ein nichtparametrischer test (willocoxon oder cruskal wallis test) verwendet werden darf. Dazu ahben wir die Daten als Histogram , Boxplot , QQPLOT und Ecdf dargestellt. Das Histogram lässt aufgrund der wenigen Datenpubnkte keine eindeutige Identifizieurng als Normalverteilung zu. Wir haben uns daher in der Verbesserung dazu entschieden,einen Wilcoxon-test durchzuführen, und anschleißend das Ergebnis mit einer Resampling-Simulation abzusichern.  -> Ziehen mit Zurücklegen
 
-```{r}
-library(stats) 
 
-before_trimmed <- c(1.36, 1.37, 1.29, 1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
-after_trimmed <- c(1.29, 1.25, 1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
 
-# Histogram and Q-Q plot for 'before_trimmed' vector
-par(mfrow=c(2, 2)) # Set up the plotting area
-
-# Histogram for 'before_trimmed'
-hist(before_trimmed, main="Histogram of Before_trimmed Data", xlab="Before_trimmed")
-
-# Q-Q plot for 'before_trimmed'
-qqnorm(before_trimmed, main="Q-Q Plot of Before_trimmed Data")
-qqline(before_trimmed, col="red")
-boxplot(before_trimmed)
-
-ecdf_func <- ecdf(before_trimmed)
-   
-plot(ecdf_func, xlab="Before_trimmed", ylab="Cumulative Probability",  
-     main="Empirical Cumulative Distribution Function")
-
-# Histogram for 'after_trimmed'
-hist(after_trimmed, main="Histogram of After_trimmed Data", xlab="After_trimmed")
-
-# Q-Q plot for 'after_trimmed'
-qqnorm(after_trimmed, main="Q-Q Plot of After_trimmed Data")
-qqline(after_trimmed, col="red")
-boxplot(after_trimmed)
-
-ecdf_func2 <- ecdf(after_trimmed)
-   
-plot(ecdf_func2, xlab="After_trimmed", ylab="Cumulative Probability",  
-     main="Empirical Cumulative Distribution Function")
-
-par(mfrow=c(1, 1)) # Reset plotting area
-
-shapiro.test(before_trimmed)
-shapiro.test(after_trimmed)
-
-```
-
-Mit 
-before_trimmed p-value = 0.1312
-
-after_trimmed p-value = 0.1736
-
-behalten wir H0, dass eine Normalverteilung der Daten gegeben ist, und nehmen zur Analyse einen 2-seitigen t-test.
 
 
 
@@ -143,28 +96,18 @@ $$H_0: \mu_{before} = \mu_{after}$$
 Die alternative Hypothese, dass das Training einen Unterschied ausmachte, heißt:
 
 $$H_1: \mu_{before} \neq \mu_{after}$$  
-Wir verwenden einen paired t-Test, da die Messungen von einem Mitarbeiter durchgeführt wurden und wir den Vorher-Nachher-Effekt messen möchten.
-Da wir irgendeinen zeitlichen Effekt (schneller oder langsamer) testen möchten, wenden wir den t-Test in der two-tailed (zweiseitige) Variante an.
+Wir verwenden einen paired Wilcoxon-Rangusmmen-Test, da die Messungen von einem Mitarbeiter durchgeführt wurden und wir den Vorher-Nachher-Effekt messen möchten.
+Da wir irgendeinen zeitlichen Effekt (schneller oder langsamer) testen möchten, wenden wir ihn in der two-tailed (zweiseitige) Variante an.
 
 ```{r}
-t.test(before_trimmed, after_trimmed, paired=TRUE)
+test_result <- wilcox.test(before, after, paired = TRUE)
+
+# Print the results
+print(test_result)
 ```
-Der Resultat zeigt, dass die Test-Statistik einen Wert von t = 6.9784 hat und aufgrund des p-values von 0.0001151 die Nullhypothese (es gibt keinen Effekt) sowohl auf 5% als auch auf 1% Signifikanzniveau verworfen werden kann. Das Training hatte daher einen Effekt. 
+Der Resultat zeigt, dass die Test-Statistik einen Wert von V = 54 hat und aufgrund des p-value = 0.008004 die Nullhypothese (es gibt keinen Effekt) sowohl auf 5% als auch auf 1% Signifikanzniveau verworfen werden kann. Die zentrale Tendenz der Daten ( Median) ist daher unterschiedlich, und wir können H1 behalten, dass das Traning einen Effekt hatte.
 
-Für die zweite Fragestellung, ob die mittlere Arbeitszeit nach dem Training kürzer ist, stellen wir folgende Nullhypothese (Arbeitszeit ist nach dem Training nicht kürzer) auf:
 
-$$H_0: \mu_{before} \leq \mu_{after}$$  
-Die alternative Hypothese lautet dementsprechend: 
-$$H_1: \mu_{before} > \mu_{after}$$ 
-
-Da wir hier auf eine Seite testen wollen (Arbeitszeit wird schneller, nicht langsamer) wird der Test one-tailed durchgeführt.
-
-```{r}
-
-t.test(before_trimmed,after_trimmed,alternative = "greater", paired=TRUE)
-```
-Der p-Value bei diesem t-Test beträgt 5.755e-05, wodurch auch hier die Nullhypothese sowohl auf 5% als auch auf 1% Signifikanzniveau verworfen werden kann. Das Ergebnis ist hochsiginifikant. 
-Dies bedeutet, dass das Training einen Effekt zeigt und die mittlere Arbeitszeit verringert hat.
 
 ** Ergänzung SS 2024 ** 
 
@@ -219,10 +162,11 @@ legend("topright", legend = c("Mean", "95% CI", "99% CI"),
 
 
 ```
-Wir haben dafür ein Bootstrapping mit Resampling durchgeführt. Dabei haben wir 1000 als Anzahl der Resamplings gewählt. Hier sind die Intervallgrenzen für die erwartet Differenzt des Mittelwerts. 
+Da wir hier im Vorfeld einen nicht-parametirschen test durchgeführt haben, wollten wir die zentrale Mittelwert-Tendenz im Anschluss mit Bootstrapping simulieren, um daraus einen direkten Verrgleich zu bekommen. Wir haben dafür ein Bootstrapping mit Resampling durchgeführt. Dabei haben wir 1000 als Anzahl der Resamplings gewählt. Hier sind die Intervallgrenzen für die erwartet Differenzt des Mittelwerts. 
+
 Da in beiden Intervallen 0 nicht enthalten ist, kann man hier erwarten, dass ein Unterschied zwischen den beiden Mittelwerten besteht (sowohl bei 95 als auch 99 CI)
 
-Der Resampling Ansatz deckt sich also ergänzend mit der Annahme (H1)  , die beim  durchgeführten t-test behalten wurde.
+Der Resampling Ansatz deckt sich also ergänzend mit der Annahme (H1)  , die beim  durchgeführten Wilxocon -Test behalten wurde.
 
     2.5%      97.5% 
 0.05111111 0.11336111 
@@ -327,6 +271,41 @@ Das Ergebnis ist somit als stark signifikant zu werten. Der verwendete Test weis
 Die Teststatistik ist 6,443 mit 19 Freiheitsgraden.
 \pagebreak
 
+
+Ergänzung SS24 
+
+Bayes factors
+The Bayes Factor is the ratio of posterior probabilites of parameters under 2 hypotheses.
+BF =
+P[θ ∈ Θ0|x]
+P[θ ∈ Θ1|x]
+This is symmetric w.r.t.˜the two hypotheses and on ratio scale, thus BF = 2 can be interpreted as
+H0 is twice as likely as H1. If you want asymmetry you can add weights (i.e.“loss’ ’ when making the
+wrong decision). The decision is then based on k0
+k1
+· B
+Im Zuge der Überarbeitung haben wir uns dazu entschieden, einen Hypothesentest mit dem Bayesfaktor durchzuführen. Dazu haben wir das Paket BayesFactor benutzt. Dabei wird ausgehend von der Verteilung ein Bayesfaktor erstellt, der der Quotienten  P(h0) / P(h1) ist.
+H0 ist hierbei, dass der wahre Mittelwert der Daten zwischen 0.01 und 0.01 liegt, H1 ist, dass der wahre Mittelwert ausserhalb davon liegt.
+
+1] Alt., r=0.707 : 5641.645 ±0% spricht dafür, dass der wahre Mittelwert mit hoher wahrscheinlichekit nicht bei 0.01 liegt. Dadruch decken sich hier unsere Ergebnise mit der Ausarebitung aus dem WS, bei der wir aufgrund des student t-Tests davon ausgegangen sind, 
+
+
+```{r}
+
+daten <- c(0.146842, 0.156757, 0.091255, 0.063720, 0.148471, 
+                    -0.045436, 0.150407, 0.077905, 0.077267, 0.026454, 
+                    0.090700, 0.245384, 0.129650, 0.141617, 0.039957, 
+                    0.165351, 0.029091, 0.073473, 0.189657, 0.123897)
+library(BayesFactor)
+
+
+bf <- ttestBF(daten, mu = 0.01)
+summary(bf)
+
+```
+
+
+
 **Aufgabe 4**
 
 Eine Genontologieanalyse wird durchgeführt, um den Anteil von Genen aus bestimmten Pfades (pathway) zu bestimmen, die an der Entwicklung von Krebs beteiligt sind. Um die Frage zu beantworten, werden 720 mögliche Gene in Betracht gezogen, von denen 696 in mehr als einer Studie gefunden wurden und daher glaubwürdig sind. Von diesen haben 413 mit der Krebsentwicklung zu tun. Berechnen Sie eine Schätzung und das zugehörige 95% bzw. 99% Konfidenzintervall für dieses Szenario. Testen Sie, ob der Anteil der beteiligten Genen sich signifikant gegenüber einer früheren Studie verändert hat, die 55% der Gene als beteiligt gefunden hat.
@@ -386,6 +365,11 @@ print(summary(firma2))
 
 hist(firma1, breaks = 9, prob = TRUE)
 lines(density(firma1))
+
+boxplot(firma1, horizontal = TRUE, title = "Firma1")
+boxplot(firma2, horizontal = TRUE)
+
+
 qqnorm(firma1)
 qqline(firma1)
 qqnorm(firma2)
@@ -406,19 +390,68 @@ sd(firma2)
 ```
 Ausgehend von der Summary, wo der Mittelwert von Firma 1 bei 3673 und von Firma 2 bei 2287 liegt, würde man man davon ausgehen, dass bei Firma 1 das Gehalt lukrativer ist.
 
-Um dies statistisch abzusichern, muss nun eine passende Teststatisik gewählt werden. Anhand des QQ-Plots kann man davon ausgehen, dass Firma 2 nicht normalverteilt ist. Firma 1 könnte eine Normalverteilung approximieren, wenn man die obersten und untersten 2 Ränder als Ausreißer interpretiert.
+Die Nullhypothese H0 lautet (Gehälter haben gleiche Tendenz):
+$$H_0: p = p0$$ 
+Die Alternativhypothese H1 lautet (Gehälter sind unterschiedlich):
+$$H_1: p \ne p0$$ 
 
-Wir verwenden jedoch einen Wilcoxon-Test für nicht-parametrische Stichproben. Vorrausetzung ist, dass die Daten ordinal und die Stichproben gepaart sind. Es wird geprüft, ob es einen Unterschied in der zentralen Tendenz gibt.
 
-Die Nullhypothese H0 lautet, es gibt keinen Unterschied (in Bezug auf die zentrale Tendenz) in den beiden Gruppen Firma1 bzw. Firma2.
-Wir konkretisieren diese Hypothese noch dazu, dass wir darauf testen, ob die Werte von Firma 1 größer als die von Firma 2 sind.
 
-$$H_0: \mu_{1} \leq \mu_{2}$$ 
-Die Alternativhypothese H1 lautet dazu:
 
-$$H_1: \mu_{1} > \mu_{2}$$
+Da es sich hierbnei um nicht parametrische Daten handelt und die Verteilung der Daten unterschiedlich ist, und da firma 2 starke ausreißer beinhaltet, kann man hier nicht einfach einenWilcoxon test durchführen. Stattdessen haben wir uns dazu entschieden, eine Bootsreapping Simulation mit Resampling durchzuführen. Dazu haben wir wieder n=1000 genommen und die Erwartete Differenz des Mittelwerts berechnet.
 
 ```{r}
-wilcox.test(firma1, firma2, alternative = "greater")
+before_training <- c(1.36, 1.37, 1.29,  1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
+after_training <- c(1.29, 1.25,  1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
+
+#Funktion zur Berechnung der Differenz der Mittelwerte
+mean_diff <- function(data1, data2) {
+  return(mean(data1) - mean(data2))
+}
+
+#Bootstrapping durchführen
+set.seed(123)
+n_boot <- 1000
+boot_diffs <- numeric(n_boot)
+
+for (i in 1:n_boot) {
+  boot_firma1 <- sample(firma1, length(firma1), replace = TRUE)
+  boot_firma2 <- sample(firma2, length(firma2), replace = TRUE)
+  boot_diffs[i] <- mean_diff(boot_firma2, boot_firma1)
+}
+
+
+
+
+#Bootstrapped Konfidenzintervalle berechnen
+
+boot_ci <- quantile(boot_diffs, c(0.025, 0.975))
+boot_ci2 <- quantile(boot_diffs, c(0.005, 0.995))
+
+boot_ci
+boot_ci2
+hist(boot_diffs, breaks = 30, main = "Bootstrapped Differences in Means",
+     xlab = "Difference in Means", col = "lightblue", border = "white")
+abline(v = boot_ci[1], col = "red", lwd = 2)
+abline(v = boot_ci[2], col = "red", lwd = 2)
+
+abline(v = boot_ci2[1], col = "green", lwd = 2)
+abline(v = boot_ci2[2], col = "green", lwd = 2)
+
+
+abline(v = mean(boot_diffs), col = "blue", lwd = 2)
+legend("topright", legend = c("Mean", "95% CI", "99% CI"),
+       col = c("blue", "red", "green"), lwd = 2)
+
+
+
+
+
+
+
+
 ```
-Aufgrund des signifikanten p-Values kann davon ausgegangen werden, dass ein zufällig ausgewählter Wert von Firma 1 in der Regel größer als ein Wert der Firma 2 ist. Daher verwerfen wir H0, und nehmen an, dass wir bei Firma 1 das höhere Gehalt bekommen.
+
+
+
+Ausgehend von dem 5% und 1% CI sieht man, dass 0 nicht in der Simulation enthalten ist, die Werte aus der DifferenzenBildung Firma2-Firma1 negativ sind. Daher kann man davon ausgehen, dass Firma 1 das lukrativere Gehalt bietet.
