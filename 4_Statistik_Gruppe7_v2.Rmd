@@ -318,8 +318,8 @@ title("LASSO Switzerland - Cross Validation", line=2.5)
 ### Get Coefficients for RR and LASSO Model fit
 ```{r}
 #for RR
-RRlambda_min <- fitRR_cv$lambda.min #λ of minimum mean cross-validated error 
-RRlambda_1se <- fitRR_cv$lambda.1se #largest value of λλ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+RRlambda_min <- fitRR_cv$lambda.min # lamda of minimum mean cross-validated error 
+RRlambda_1se <- fitRR_cv$lambda.1se #largest value of lamda such that error is within 1 standard error of the cross-validated errors for lambda.min. 
 
 
 fitRR_min_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_min)], 3)
@@ -337,15 +337,14 @@ $Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \c
 
 ```{r}
 #coefficients for LASSO Model fit:
-Llambda_min <- fitL_cv$lambda.min #λ of minimum mean cross-validated error 
-Llambda_1se <- fitL_cv$lambda.1se #largest value of λ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+Llambda_min <- fitL_cv$lambda.min #lamda of minimum mean cross-validated error 
+Llambda_1se <- fitL_cv$lambda.1se #largest value of lamda such that error is within 1 standard error of the cross-validated errors for lambda.min. 
 
 
 fitL_min_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_min)], 3)
 fitL_1se_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_1se)], 3)
 
-swiss_df 
-curve()
+
 ```
 LASSO Fit, with lambda of minimum mean cross-validated error
 
@@ -490,7 +489,7 @@ library(ggplot2)
 library(dplyr)
 library(GGally)
 
-usa <- us_df
+usa <- state.x77
 lambda.grid <- 10^seq(10, -2, length=100) # 10^10 bis 10^-2 in 100 stufen
 
 ```
@@ -510,12 +509,13 @@ lambda.grid <- 10^seq(10, -2, length=100) # 10^10 bis 10^-2 in 100 stufen
 ### Data Preparation
 ```{r, echo=TRUE, eval=TRUE}
 # Data prep USA
-usa
+usa <- as.data.frame(state.x77)
 #unabhängige variablen
 X <- usa %>% dplyr::select(-Murder) %>% as.matrix()
 #abhängige variable
 Y <- usa %>% dplyr::select(Murder) %>% as.matrix()
-
+Y
+X
 ```
 
 ```{r}
@@ -593,8 +593,8 @@ title("LASSO USA - Cross Validation", line=2.5)
 ### Get Coefficients for RR and LASSO Model fit
 ```{r}
 #for RR
-RRlambda_min <- fitRR_cv$lambda.min #λ of minimum mean cross-validated error 
-RRlambda_1se <- fitRR_cv$lambda.1se #largest value of λλ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+RRlambda_min <- fitRR_cv$lambda.min #lamda of minimum mean cross-validated error 
+RRlambda_1se <- fitRR_cv$lambda.1se #largest value of lamdalamda such that error is within 1 standard error of the cross-validated errors for lambda.min. 
 
 
 fitRR_min_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_min)], 3)
@@ -612,15 +612,14 @@ $Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \c
 
 ```{r}
 #coefficients for LASSO Model fit:
-Llambda_min <- fitL_cv$lambda.min #λ of minimum mean cross-validated error 
-Llambda_1se <- fitL_cv$lambda.1se #largest value of λ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+Llambda_min <- fitL_cv$lambda.min #lamda of minimum mean cross-validated error 
+Llambda_1se <- fitL_cv$lambda.1se #largest value of lamda such that error is within 1 standard error of the cross-validated errors for lambda.min. 
 
 
 fitL_min_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_min)], 3)
 fitL_1se_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_1se)], 3)
 
-swiss_df 
-curve()
+
 ```
 LASSO Fit, with lambda of minimum mean cross-validated error
 
@@ -754,6 +753,9 @@ cat("AUC (Area Under the Curve):", auc_value, "\n")
 Abschließend erstellen wir eine Konfusionsmatrix und Klassifiizieren unsere Daten ausgehend von unserem Modell. Als Treshold setzen wir 0.5
 ```{r}
 #Wir setzen als ja/nein-Kriterium
+data.predictions <- predict(modell, type = "response")
+classification <- data.frame(response =df$type)
+
 
 threshold <- 0.5
 data.pred.class <- ifelse(data.predictions >= threshold, 1, 0)
