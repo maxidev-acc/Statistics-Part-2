@@ -277,8 +277,8 @@ Ergänzung SS24
 Bayes factors
 The Bayes Factor is the ratio of posterior probabilites of parameters under 2 hypotheses.
 BF =
-P[θ ∈ Θ0|x]
-P[θ ∈ Θ1|x]
+P[Theta e Theta0|x]
+P[Theta e Theta1|x]
 This is symmetric w.r.t.˜the two hypotheses and on ratio scale, thus BF = 2 can be interpreted as
 H0 is twice as likely as H1. If you want asymmetry you can add weights (i.e.“loss’ ’ when making the
 wrong decision). The decision is then based on k0
@@ -287,22 +287,41 @@ k1
 Im Zuge der Überarbeitung haben wir uns dazu entschieden, einen Hypothesentest mit dem Bayesfaktor durchzuführen. Dazu haben wir das Paket BayesFactor benutzt. Dabei wird ausgehend von der Verteilung ein Bayesfaktor erstellt, der der Quotienten  P(h0) / P(h1) ist.
 H0 ist hierbei, dass der wahre Mittelwert der Daten zwischen 0.01 und 0.01 liegt, H1 ist, dass der wahre Mittelwert ausserhalb davon liegt.
 
-1] Alt., r=0.707 : 5641.645 ±0% spricht dafür, dass der wahre Mittelwert mit hoher wahrscheinlichekit nicht bei 0.01 liegt. Dadruch decken sich hier unsere Ergebnise mit der Ausarebitung aus dem WS, bei der wir aufgrund des student t-Tests davon ausgegangen sind, 
+1] Alt., r=0.707 : 5641.645 ±0% spricht dafür, dass der wahre Mittelwert mit hoher wahrscheinlichekit nicht bei 0.01 liegt. Dadruch decken sich hier unsere Ergebnise mit der Ausarebitung aus dem WS, bei der wir aufgrund des student t-Tests davon ausgegangen sind, dass der Wahre mittelwert ungleich bzw größer als 0.01 ist. 
+
+
 
 
 ```{r}
 
-daten <- c(0.146842, 0.156757, 0.091255, 0.063720, 0.148471, 
-                    -0.045436, 0.150407, 0.077905, 0.077267, 0.026454, 
-                    0.090700, 0.245384, 0.129650, 0.141617, 0.039957, 
-                    0.165351, 0.029091, 0.073473, 0.189657, 0.123897)
-library(BayesFactor)
+data <- c(0.146842, 0.156757, 0.091255, 0.063720, 0.148471,
+           -0.045436, 0.150407, 0.077905, 0.077267, 0.026454,
+           0.090700, 0.245384, 0.129650, 0.141617, 0.039957,
+           0.165351, 0.029091, 0.073473, 0.189657, 0.123897)
+hist(data)
+
+priorBF <- ttestBF(x = data, mu = 0.01)
+summary(priorBF)
+
+## Sample from the corresponding posterior distribution
+posterior_data <- ttestBF(x = data, posterior = TRUE, iterations = 1000 )
+summary(posterior_data)
+#View(posterior_data)
+posterior_data = as.data.frame(posterior_data)
+
+bf_pos = ttestBF(x = posterior_data$mu, mu= 0.01)
+bf_pos
+summary(bf_pos)
 
 
-bf <- ttestBF(daten, mu = 0.01)
-summary(bf)
-
+ggplot(posterior_data, aes(x = mu)) +
+  geom_density(alpha = 0.5) +
+  labs(title = 'Posterior Distributions',
+       x = 'Mean Value',
+       y = 'Density') +
+  theme_minimal()
 ```
+
 
 
 
@@ -401,8 +420,15 @@ $$H_1: p \ne p0$$
 Da es sich hierbnei um nicht parametrische Daten handelt und die Verteilung der Daten unterschiedlich ist, und da firma 2 starke ausreißer beinhaltet, kann man hier nicht einfach einenWilcoxon test durchführen. Stattdessen haben wir uns dazu entschieden, eine Bootsreapping Simulation mit Resampling durchzuführen. Dazu haben wir wieder n=1000 genommen und die Erwartete Differenz des Mittelwerts berechnet.
 
 ```{r}
-before_training <- c(1.36, 1.37, 1.29,  1.38, 1.31, 1.40, 1.39, 1.30, 1.37)
-after_training <- c(1.29, 1.25,  1.26, 1.25, 1.23, 1.26, 1.31, 1.24, 1.31)
+firma1 <-c(4218.874, 2323.970,
+4104.761, 3172.519, 3058.287, 2386.729 ,4405.709, 2665.709 ,5326.124, 2993.015,
+5152.121, 3164.876 ,2703.269 ,3837.005 ,2927.137 ,2847.995 ,3087.938, 3063.339,
+4697.341 ,5602.379 ,2992.996 ,5052.060, 4095.423, 1668.059, 6268.097)
+
+firma2 <- c(1888.252, 2429.395, 2062.037, 1932.138, 1788.335 ,2119.263,
+2185.819, 2173.098 ,2391.626, 1576.546, 1871.540, 2405.640, 2470.771, 1879.237,
+2181.048 ,2272.962 ,2174.767, 1729.053 ,1119.993 ,2325.788 ,2112.610, 2847.006,
+1124.272 ,5320.000, 4785.000)
 
 #Funktion zur Berechnung der Differenz der Mittelwerte
 mean_diff <- function(data1, data2) {
