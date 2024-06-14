@@ -44,46 +44,95 @@ invisible(na.omit(df))
 
 gdp <- df$ppgdp
 im <- df$infantMortality
-plot(gdp ~ im)
-boxplot(gdp~im)
+plot(im ~ gdp, main = "Plot gdp ~ im")
+#boxplot(gdp~im, main = "Boxplot gdp ~ im")
 fmB <- lm(gdp ~ im)
-plot(lm(formula = gdp~im))
+plot(lm(formula = gdp~im),main = "Plot LinearModell lm(gdp ~ im)")
 
 ```
 
-Auf den Plots ist zu erkennen, dass unsere Variablen diese Kriterien nicht erfüllen. Anhand des Residuenplots kann man erkennen, dass das Modell einen systematischen Fehler aufweist. An dem QQ-PLot erkennt man, dass der Modellfehler nicht normalverteilt ist. 
-Dementsprechend werden die Daten transformiert. Auf dem Plot erkennt man, dass der Zusammenhang in etwa einer Exponentialfunktion entspricht, weswegen die Daten logarithmiert werden. 
+Auf den Plots ist zu erkennen, dass unsere Variablen diese Kriterien nicht erfüllen.
 
-Dann wird eine Summary dieses Modells erstellt.
+
+Residuals vs fitted: Überprüfung der Linearisitätsannahme und Homoskedastizität (konstante Varianz der Fehler).
+Anhand des Modells kann man erkennen, das die Residuen einen systematischen Fehler beinhalten. Dhaer ist ein linerares Modell im ersten Schritt nciht zulässig. 
+
+QQPlot: Überprüfung der Normalverteilungsannahme der Residuen.
+Hier kann man erkennen, dass die Residuen keiner Normalverteilung folgen, wodurch das Modell nciht gülitg ist.
+
+
+Scal-Location-Plot: Überprüfung der Homoskedastizität.
+Man kann erkennen, dass dass die Daten "treichterförmig auseinanderlaufen", was für eine unterscheidliche Varianz bei bei verschieden großen und geschätzten Werten bedeutet. Daher sit auch hier ein linerares Modell ungültig.
+
+
+Residuals vs leverage Plot: Identifizierung von einflussreichen Datenpunkten (d.h. Punkte, die einen großen Einfluss auf die Anpassung des Modells haben).
+Die meisten Punkte haben eine kleine Hebelwirkung und sind konzentriert. Einige Punkte haben eine höher Leverage und könnten daher einflussreichs sein 
+
+
+
+Dementsprechend werden die Daten transformiert.
+Auf dem Plot erkennt man, dass der Zusammenhang in etwa einer Exponentialfunktion entspricht, weswegen wir uns dazu einschieden haben, die Daten zu logarithmieren. 
+Ausgehend davon werden dann erneut die Residuenplots analysiert. 
+
+
 
 ```{r}
 gdp <- log(df$ppgdp)
 im <- log(df$infantMortality)
-boxplot(gdp~im)
-plot(lm(formula = gdp~im))
-summary(lm(formula = gdp~im))
-fmA <- lm(gdp ~ im)
-summary(fmA)
+#boxplot(gdp~im , main = "boxplot gdp~im ")
+plot(lm(formula = gdp~im), main ="Plot of Linear Model ( log(gdp~im) ) "  )
+
 
 ```
 
+Residuals vs fitted: Überprüfung der Linearisitätsannahme und Homoskedastizität (konstante Varianz der Fehler).
+Das logarithmierte Modell hat keinen systematischen Fehler mehr in den Residuals und ist daher dsbbzgl.  geeignet. 
+
+QQPlot: Überprüfung der Normalverteilungsannahme der Residuen.
+Die Residuen-Fehler approximeiren in Annäherung eine Normalverteilung und ist daher dsbbzgl. geeignet. 
+
+
+Scal-Location-Plot: Überprüfung der Homoskedastizität.
+Im Scale-Location plot ist Homoskedastizit gegeben ,  Daher ist das Modell auch dsbbzgl. geeignet.
+
+
+Residuals vs leverage Plot: Identifizierung von einflussreichen Datenpunkten (d.h. Punkte, die einen großen Einfluss auf die Anpassung des Modells haben).
+Die meisten Punkte sind nahe der y-Achse un haben keine große Hebelwirkung. Es sind keine Punkte ausserhalb der Cooks-Distance.
+
+
+** Ergebnis ** 
+Ausgehend von den Residuenplots entschließen wir uns daher, dieses lineare Modell zu behalten, und modellieren den lienaren Zusammenhang aus dem Output der Summarys des Modell
 Durch den Output der Summarys erhalten wir folgende Kennzahlen zu dem Modell:
 
-Der Mittlere Fehler der Residuen beträgt -0.055. 
-Für den Intercept bzw. Alpha wird ein Wert von 12,033 mit einem p-Wert von <2e-16 vorgeschlagen.
-Für das Beta wird ein Wert von -1.24 mit einem p-Wert von <2e-16 vorgeschlagen.
 
-Damit erhalten wir die Parameter für die Modellierung eines linearen Zusammenhangs. 
+```{r}
+summary(lm(formula = gdp~im))
+fmA <- lm(gdp ~ im)
+summary(fmA)
+```
+
+
+
+
+Der Mittlere Fehler der Residuen beträgt -0.055. 
+Für den Intercept bzw. Alpha wird ein Wert von 12,033 mit einem p-Wert von <2e-16 vorgeschlagen.Dieser p-Wert ist hochsignifikant. 
+Für das Beta (Steigungskoeffizienten )wird ein Wert von -1.24 mit einem p-Wert von <2e-16 vorgeschlagen. Damit ist auch dieser Wert hochsignifikant. 
+
+Damit erhalten wir die Parameter für die Modellierung eines linearen Zusammenhangs. Mit diesem Modell können 76,5% der Varianz (R-Squared) erklärt werden. Durch das Logarithmieren haben wir ein robustes Modell erhalten, um den Zusammenhang zwischen GDP und Infant Mortality linear darstellen zu können.
   $$y(i) = alpha + beta * x$$
-Mit diesem Modell können 76,5% der Varianz (R-Squared) erklärt werden. Durch das Logarithmieren haben wir ein robustes Modell erhalten, um den Zusammenhang zwischen GDP und Infant Mortality darstellen zu können.
 
 ```{r}
 curve(12.03359 -1.24220 * x, from =0, to = 10, n=40, xlab = "GDP log()", ylab = "infantMortality (log)")
 ```
 \pagebreak
 
-**Schweiz**
 
+
+
+
+
+**Schweiz**
+  
 Wir kehren zurück zu den Variablen “Fertility”, “Agriculture”, “Education”, “Catholic” und “Infant. Mortality”
 aus dem R Datensatz swiss des R package utils. Passen Sie für die oben genannten Variablen ein Modell an,
 das Education durch die übrigen Variablen erklärt, soweit dies zulässig ist.
@@ -102,18 +151,39 @@ str(Swiss)
 ```{r} 
 ggpairs(Swiss)
 ```
-In der Scatterplot-Matrix zeigt sich, dass Education stark signifikant mit Fertility und Agriculture negativ korreliert ist.
-Bei Catholic und infant mortality lässt sich keine Korrelation feststellen.
+## Überprüfung der Koeffizienten mittels Scatterplot Matrix.
 
-Nun sehen wir uns die Residual Plots an.
+
+In der Scatterplot-Matrix zeigt sich, dass Education stark signifikant mit Fertility und Agriculture negativ korreliert ist.
+Bei Catholic und infant mortality lässt sich keine Korrelation feststellen. 
+Es wird auch die Korrelation der Regressoren überprüft. Hier sind keine Werte über 0,5 feststellbar, weshalb wir initial alle Parameter als Regressoren modellieren und anschließend die Residuenplots überprüfen. 
+
 
 ```{r}
-education_lm1 <- lm(Education ~ ., data=Swiss)
+education_lm1 <- lm(Education ~ ., data=Swiss )
 summary(education_lm1)
-plot(education_lm1)
+plot(education_lm1 , main = "Modell 1 :Education ~ Fert. + Agri. + Cath. + Inf.Mort ")
 
 ```
-Man sieht das "V. De Geneve" sowohl im QQ-Plot als auch für Leverage weit außerhalb liegt. Wir entfernen diesen Wert daher, um einen besseren fit zu bekommen. Ebenso sieht man in der Summary, dass der Wert für Infant Mortality nicht signifikant ist, daher wird diese Spalte entfernt. 
+##Überprüfung der Residuen
+
+
+Residuals vs fitted: Überprüfung der Linearisitätsannahme und Homoskedastizität (konstante Varianz der Fehler).
+Das  Modell hat keinen systematischen Fehler mehr in den Residuals und ist daher dsbbzgl.  geeignet. "V. De Geneve" ist als Ausreißer erkennbar
+
+QQPlot: Überprüfung der Normalverteilungsannahme der Residuen.
+Die Residuen-Fehler approximieren in Annäherung eine Normalverteilung und ist daher dsbbzgl. geeignet. "V. De Geneve" ist als Ausreißer erkennbar
+
+
+Scal-Location-Plot: Überprüfung der Homoskedastizität.
+Im Scale-Location plot ist Homoskedastizit gegeben. Es leigt eine Punktwolke vor.  Daher ist das Modell auch dsbbzgl. geeignet.
+
+
+Residuals vs leverage Plot: Identifizierung von einflussreichen Datenpunkten (d.h. Punkte, die einen großen Einfluss auf die Anpassung des Modells haben).
+Die meisten Punkte sind nahe der y-Achse un haben keine große Hebelwirkung. "V. De Geneve" leigt ausserhalb der Cooks-Distance. 
+
+
+Aus der Summary erkennt man, dass alle Regressoren ausser Infant Mortality signifikant sind. Der Punkt "V. De Geneve" ist  ind der Residuenplot als Ausreißer erkennbar und wird daher entfernt. Infant Mortality wird ebenfalls als Regressor entfernt.  
 
 ```{r}
 education_lm2 <- lm(Education ~ . -Infant.Mortality, data=Swiss[-c(45),])
@@ -122,14 +192,19 @@ summary(education_lm2)
 ```
 
 Wir bekommen nun mit summary die Multiple Regression (ohne Infant.Mortality und "V. De Geneve"):
+
 Das R² ist 62.16% und damit niedriger als jenes der ersten Anpassung, bei der Infant Mortality und "V. De Geneve" nicht entfernt wurden. Wir wählen daher education_lm1 als Modell aus, welches mit 73.05% eine
 bessere Modellanpassung hat.
+
+
+
 
 Das bedeutet unser Modell ist: 
 Education = 49.99 + (-0.52) * Fertility + (-0.23) * Agriculture + 0.08 * Catholic + 0.28 * Infant.Mortality
 mit R² = 73.05%
 
 Die Aussage dieser Formel ist, dass die Education (% der Wehrpflichtigen mit mehr als Grundschulausbildung) theoretisch bei 49.99% läge, wenn alle anderen Werte Null sind (= Intercept bzw. alpha).
+##Interpretation 
 
 Die Werte für Katholizismus und Säuglingssterblichkeit spielen eine untergeordnete Rolle.
 Es zeigt sich daher, man über die Geburtenrate und die Beschäftigungsrate in der Landwirtschaft Vorhersagen zur
@@ -137,14 +212,174 @@ formalen Ausbildung der männlichen Wehrpflichtigen in der Schweiz im Untersuchu
 Höhere Beschäftigung in der Landwirtschaft geht meist mit einem geringeren Urbanisierungsgrad und einer
 geringeren Entwicklung einer Region einher. Auch in anderen Ländern zeigt sich, dass die Geburtenrate negativ mit dem 
 Einkommen korreliert ist und das Einkommen positiv mit der Ausbildung.
+
+#Ergänzung SS24
+
+Ausghehend von unserem einfachen logtischen RFegressionsmodell bilden wir mittels RIDGE und LASSO ebenfalls lineare Regressionsmodelle. 
+To find a better linear model for our data, we can use Ridge Regression or LASSO.
+Ridge regression works by penalizing the sum of squared coefficients. This also means,
+the coefficients will never be fully discarded, as they won't reach zero.
+
+LASSO uses absolute values of the coefficents to penalize them, so the values will 
+reach zero fast(er) and then be discarded -- this means, it performs feature selection.
+
+In general, RR is used for multicollinear Data, when you want to keep all regressors, 
+while LASSO is used when you want to perform feature selection and only keep relevant coefficients.
+
+Cross validation is then used, to split the data into multiple chunks, and then
+iteratively, some will be used to train the model, while others to test the trained model.
+The variable which is "trained" is lambda, a factor for the penalty.
+We supply a range of numbers to lambda.
+
+In the end, a linear model of the parameters is received.
+
+## Load Libraries and Datasets
+
+```{r, echo=TRUE, eval=TRUE}
+
+library(glmnet)
+library(dplyr)
+
+swiss_df <- swiss
+lambda.grid <- 10^seq(10, -2, length=100) # 10^10 bis 10^-2 in 100 stufen
+
+```
+
+
+
+### Data Preparation
+```{r, echo=TRUE, eval=TRUE}
+# Data prep USA
+#unabhängige variablen
+X <- swiss_df %>% dplyr::select(-Examination, -Education) %>% as.matrix()
+#abhängige variable
+Y <- swiss_df %>% dplyr::select(Education) %>% as.matrix()
+
+head(X)
+head(Y)
+
+```
+
+```{r}
+fitRR <- glmnet::glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid) #alpha = zero->ridge regression
+dim(coef(fitRR)) #zur kontrolle, zeigt welche dimensions (inkl. intercept) wir haben
+
+```
+
+
+**Daten Plotten:**
+```{r}
+matplot(fitRR$lambda, t(coef(fitRR)[-1, ]), type="l", log="x", main="Ridge Regression Switzerland")
+
+```
+### Cross Validation
+```{r}
+fitRR_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitRR_cv_min <- fitRR_cv$lambda.min
+fitRR_cv_1se <- fitRR_cv$lambda.1se
+
+#plotting
+plot(fitRR_cv, type="l")
+title("Ridge Regression Switzerland - Cross Validation", line=2.5)
+
+```
+In the row above the graph, it shows the number of regressors that are kept. So as can be seen here, none of them are discarded.
+
+## Swiss -- LASSO
+```{r}
+fitL <- glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # alpha = 1 --> LASSO
+dim(coef(fitL))
+```
+
+
+**Plotten**
+```{r}
+#Plotten der LASSO
+matplot(fitL$lambda, t(coef(fitL)[-1, ]), type="l", log="x", main="LASSO Switzerland")
+```
+
+### Cross Validation Swiss LASSO
+
+```{r}
+fitL_cv <- cv.glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # cv = Cross Validation
+```
+
+
+```{r}
+fitL_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitL_cv_min <- fitL_cv$lambda.min
+fitL_cv_1se <- fitL_cv$lambda.1se
+
+#plotting
+plot(fitL_cv, type="l")
+title("LASSO Switzerland - Cross Validation", line=2.5)
+
+```
+### Get Coefficients for RR and LASSO Model fit
+```{r}
+#for RR
+RRlambda_min <- fitRR_cv$lambda.min #λ of minimum mean cross-validated error 
+RRlambda_1se <- fitRR_cv$lambda.1se #largest value of λλ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+
+
+fitRR_min_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_min)], 3)
+fitRR_1se_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_1se)], 3)
+```
+Ridge Regression Fit, with lambda of minimum mean cross-validated error
+
+$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+
+Ridge Regression Fit, with largest lambda within 1 std. error of lambda.min
+
+
+$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+
+
+```{r}
+#coefficients for LASSO Model fit:
+Llambda_min <- fitL_cv$lambda.min #λ of minimum mean cross-validated error 
+Llambda_1se <- fitL_cv$lambda.1se #largest value of λ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+
+
+fitL_min_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_min)], 3)
+fitL_1se_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_1se)], 3)
+
+swiss_df 
+curve()
+```
+LASSO Fit, with lambda of minimum mean cross-validated error
+
+$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+
+LASSO Fit, with largest lambda within 1 std. error of lambda.min **Here, Infant Mortality is discarded as a regressor**
+
+$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \pagebreak
 
 
 **USA**
 
 Wir kehren zurück zu den Variablen “Population”, “Income”, “Illiteracy”, “Life.Exp”, “Murder”, “HS Grade” und “Frost” aus dem R Datensatz state.x77. Passen Sie für die oben genannten Variablen ein lineares Modell (lm) an, das “Murder” durch die übrigen Variablen erklärt, soweit dies zulässig ist.
+#
 
-Es wird das Datenset state.x77 verwendet. Anhand des Scatterplots kann man erkennen, dass alle Variablen bis auf Income signifikant mit Murder korrelieren. Es wird also ein LM-Modell mit allen Variablen erstellt (Area und Frost werden aufgrund der Fragestellung verworfen).
+Im ersten Schritt überprüfen wir mittels Scatterplot die Korrelation der Variablen. 
+
+
 
 ```{r}
 library(utils)
@@ -153,25 +388,252 @@ library("PerformanceAnalytics")
 df <- data.frame(state.x77)
 summary(df)
 invisible(na.omit(df, "NA"))
-my_data <- df[, c(1,2,3,4,5,6)]
-chart.Correlation(my_data, histogram=TRUE, pch=19)
-modell1 <- lm(formula = Murder ~ . - Area - Frost, data = df)
-plot(modell1)
-summary(modell1)
+#my_data <- df[, c(1,2,3,4,5,6)]
+chart.Correlation(df, histogram=TRUE, pch=19)
+#modell1 <- lm(formula = Murder ~ . - Area - Frost, data = df)
+
 ```
-Nun werden die Summary und die Residuenplots untersucht. Die Residuenplots deuten auf keinen systematischen Fehler hin, der Residuenfehler folgt approximativ einer Normalverteilung. 
-Nur der Datenpunkt "Alabama" könnte als Ausreißer gedeutet werden. Es scheint auch kein Datenpunkt ein Hebelpunkt zu sein. 
-Der R-Squared Wert beträgt 0.763, was für eine gute Modellanpassung spricht. Income hat ein p von 0.983469 und wird daher für die weitere Modellbildung entfernt.
+Dabei wird ersichtlich, dass alle Variablen außer Area und Income mit Murder korrelieren. Diese werden im ersten Schritt entfernt und erneut mittels Scatterplot die Korrelation der Variablen überprüft.
 
 ```{r}
+df_intitialRemoved <- df[, c(1,3,4,5,6,7)]
+View(df_intitialRemoved)
+chart.Correlation(df_intitialRemoved, histogram=TRUE, pch=19)
+#modell1 <- lm(formula = Murder ~ . - Area - Frost, data = df)
+```
+Ausgehend dabon bleiben nur die stark zu Murder korrelierten variablen. Das Problem ist nun, dass auch einige der Kovariablen stark miteinander Korreliert sind. 
+Dabei konzentrieren wir uns vor allem auf die Werte über 0.5 bzw. um 0.8 herum. Wir haben uns dazu entschieden, HS.Grad komplett zu trimmen, da diese Variable viel höhere Korrelation zu den Kovariablen hat als zu Murder an sich hat.
 
-dfnew <- df[-19, ]
 
-modell1 <- lm(formula = Murder ~ . - Area - Frost -Income, data = dfnew)
-plot(modell1)
-summary(modell1)
+```{r}
+df_secondRemoval <- df[, c(1,3,4,5,7)]
+#View(df_secondRemoval)
+chart.Correlation(df_secondRemoval, histogram=TRUE, pch=19)
+#modell1 <- lm(formula = Murder ~ . - Area - Frost, data = df)
+```
+Somit bleiben nur noch mit Murder korrelierte Variablen und die Illiteracy und Frost, die Korrelation zu Kovariablen über 0.5 haben. Wir bilden also 2 Modelle, wo jeweils eine dieser Variablen verworfen wird, und analysieren anschlueßend die Residuenplots.
+
+
+```{r}
+modell1WithoutFrost <- lm(formula = Murder ~ . - Frost  , data = df_secondRemoval)
+modell1WithoutIlliteracy<- lm(formula = Murder ~ . - Illiteracy  , data = df_secondRemoval)
+plot(modell1WithoutFrost, main = " Model 1 without Frost")
+summary(modell1WithoutFrost)
+
+plot(modell1WithoutIlliteracy,  main = " Model 1 without Illiteracy")
+summary(modell1WithoutIlliteracy)
+```
+##Auswertung Summary und Residuenplots
+
+#Model 1  : lm(formula = Murder ~ . - Frost, data = df_secondRemoval)
+
+Residuals vs fitted: Überprüfung der Linearisitätsannahme und Homoskedastizität (konstante Varianz der Fehler).
+Das  Modell hat keinen systematischen Fehler mehr in den Residuals und ist daher dsbbzgl.  geeignet.
+
+QQPlot: Überprüfung der Normalverteilungsannahme der Residuen.
+Die Residuen-Fehler approximieren in Annäherung eine Normalverteilung und ist daher dsbbzgl. geeignet.
+
+
+Scal-Location-Plot: Überprüfung der Homoskedastizität.
+Im Scale-Location plot ist Homoskedastizit gegeben. Es leigt eine Punktwolke vor.  Daher ist das Modell auch dsbbzgl. geeignet.
+
+
+Residuals vs leverage Plot: Identifizierung von einflussreichen Datenpunkten (d.h. Punkte, die einen großen Einfluss auf die Anpassung des Modells haben).
+Die meisten Punkte sind nahe der y-Achse un haben keine große Hebelwirkung. Kein Punkt liegt ausserhalb der Cooks-Distance. 
+
+
+Summary: 
+Sowohl Intercept als auch alle anderen Regressoren sind statitisch siginifkant. Mit Multiple R-squared:  0.7716 können also 77% der Varianz von Murder durch die Prädikatoren erklärt werden. Mit einem p-value: 8.619e-15 iust das Modell insgesamt statisitsch  hoch signifikant. 
+
+
+
+
+
+
+#Model 2 : lm(formula = Murder ~ . - Illiteracy, data = df_secondRemoval)
+
+
+Residuals vs fitted: Überprüfung der Linearisitätsannahme und Homoskedastizität (konstante Varianz der Fehler).
+Das  Modell hat keinen systematischen Fehler mehr in den Residuals und ist daher dsbbzgl.  geeignet.
+
+QQPlot: Überprüfung der Normalverteilungsannahme der Residuen.
+Die Residuen-Fehler approximieren in Annäherung eine Normalverteilung und ist daher dsbbzgl. geeignet.
+
+
+Scal-Location-Plot: Überprüfung der Homoskedastizität.
+Im Scale-Location plot ist Homoskedastizit gegeben. Es leigt eine Punktwolke vor.  Daher ist das Modell auch dsbbzgl. geeignet.
+
+
+Residuals vs leverage Plot: Identifizierung von einflussreichen Datenpunkten (d.h. Punkte, die einen großen Einfluss auf die Anpassung des Modells haben).
+Die meisten Punkte sind nahe der y-Achse un haben keine große Hebelwirkung. Kein Punkt liegt ausserhalb der Cooks-Distance. 
+
+
+Summary: 
+Sowohl Intercept als auch alle anderen Regressoren sind statitisch hoch siginifkant, mit Ausnahme von Poulation, was in diesem Modell nur segnifikant ist. Mit Multiple R-squared:  0.7652  können also 76% der Varianz von Murder durch die Prädikatoren erklärt werden. Mit einem p-value: 1.627e-14 iust das Modell insgesamt hoch statisitsch signifikant. 
+
+
+
+#Conclusion und Interpretation
+
+Wir haben also 2 Modelle, die beinahe gleiche Güte bzgl der Modellanpassung besitzen.
+Im gesellschaftlichen Kontext ist es schwierig, den gegenseitigen Ausschluss von Frost und Illiteary aufgrund deren Multikollinearität zu interpretieren. Einfacher dagegen ist nachzuvollziehen, dass wohl eine höhere Population direkt mit einer erhöhtern Mordrate zusammenhängt, und dass Illiteracy direkt mit der Mordrate korreliert, weslab sich aus diesen Regressoren ein multiples lineares GM modellieren lässt. 
+
+
+Im nöchsten Schritt werden wir nun mittels RIDGE und LASSO versuchen, das optimale zu ermittlen, und dieses mit unseren 2 bisherigen Modellen zu vergleichen. 
+
+##Ridge und LASSOO
+
+```{r, echo=TRUE, eval=TRUE}
+
+library(glmnet)
+library(ggplot2)
+library(dplyr)
+library(GGally)
+
+usa <- us_df
+lambda.grid <- 10^seq(10, -2, length=100) # 10^10 bis 10^-2 in 100 stufen
 
 ```
+
+
+#===============================================================================
+#===============================================================================
+
+# Bsp. 03 -- USA
+
+#===============================================================================
+#===============================================================================
+
+
+##Ridge Regression USA
+
+### Data Preparation
+```{r, echo=TRUE, eval=TRUE}
+# Data prep USA
+usa
+#unabhängige variablen
+X <- usa %>% dplyr::select(-Murder) %>% as.matrix()
+#abhängige variable
+Y <- usa %>% dplyr::select(Murder) %>% as.matrix()
+
+```
+
+```{r}
+fitRR <- glmnet::glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid) #alpha = zero->ridge regression
+dim(coef(fitRR)) #zur kontrolle, zeigt welche dimensions (inkl. intercept) wir haben
+
+```
+
+
+**Daten Plotten:**
+```{r}
+matplot(fitRR$lambda, t(coef(fitRR)[-1, ]), type="l", log="x", main="Ridge Regression USA")
+
+```
+Zoomed in its possible to see, how the slopes are approaching zero very slowly.
+
+
+```{r}
+matplot(fitRR$lambda[10:30], t(coef(fitRR)[-1, 10:30]), type="l", log="x", main="Ridge Regression USA")
+
+```
+
+Zooming in even further, the lines are approaching parallel to zero, as they will never reach it:
+
+```{r}
+matplot(fitRR$lambda[90:100], t(coef(fitRR)[-1, 90:100]), type="l", log="x", main="Ridge Regression USA")
+
+```
+
+### Cross Validation
+```{r}
+fitRR_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitRR_cv_min <- fitRR_cv$lambda.min
+fitRR_cv_1se <- fitRR_cv$lambda.1se
+
+#plotting
+plot(fitRR_cv, type="l")
+title("Ridge Regression USA - Cross Validation", line=2.5)
+
+```
+
+
+## USA -- LASSO
+```{r}
+fitL <- glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # alpha = 1 --> LASSO
+dim(coef(fitL))
+```
+
+
+**Plotten**
+```{r}
+#Plotten der LASSO
+matplot(fitL$lambda, t(coef(fitL)[-1, ]), type="l", log="x", main="LASSO USA")
+```
+Here it is nice to see, how the slopes are moving to zero, which mean the Regressor will 'disappear'. In comparison to RR, with LASSO, the values reach zero.
+### Cross Validation USA LASSO
+
+```{r}
+fitL_cv <- cv.glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # cv = Cross Validation
+```
+
+
+```{r}
+fitRR_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitRR_cv_min <- fitL_cv$lambda.min
+fitRR_cv_1se <- fitL_cv$lambda.1se
+
+#plotting
+plot(fitRR_cv, type="l")
+title("LASSO USA - Cross Validation", line=2.5)
+
+```
+
+
+### Get Coefficients for RR and LASSO Model fit
+```{r}
+#for RR
+RRlambda_min <- fitRR_cv$lambda.min #λ of minimum mean cross-validated error 
+RRlambda_1se <- fitRR_cv$lambda.1se #largest value of λλ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+
+
+fitRR_min_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_min)], 3)
+fitRR_1se_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_1se)], 3)
+```
+Ridge Regression Fit, with lambda of minimum mean cross-validated error
+
+$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+
+Ridge Regression Fit, with largest lambda within 1 std. error of lambda.min
+
+
+$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+
+
+```{r}
+#coefficients for LASSO Model fit:
+Llambda_min <- fitL_cv$lambda.min #λ of minimum mean cross-validated error 
+Llambda_1se <- fitL_cv$lambda.1se #largest value of λ such that error is within 1 standard error of the cross-validated errors for lambda.min. 
+
+
+fitL_min_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_min)], 3)
+fitL_1se_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_1se)], 3)
+
+swiss_df 
+curve()
+```
+LASSO Fit, with lambda of minimum mean cross-validated error
+
+$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+
+LASSO Fit, with largest lambda within 1 std. error of lambda.min **Here, Infant Mortality is discarded as a regressor**
+
+$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+
+
+
+
+
 \pagebreak
 
 **Lake Huron**
@@ -219,6 +681,10 @@ Findet der Rückgang weiterhin so schnell statt, dann wäre der See in etwa 2400
   
 \pagebreak
 
+
+
+
+
 **Pima Indians**
 
 Laden Sie den Datensatz ‘Pima.tr’ aus der library ‘MASS’. Ermittle ein logistisches Regressionsmodell, dass das Auftreten von Diabetes (‘type’) durch die übrigen unabhängigen Variablen Alter (age), Anzahl der Schwangerschaften (npreg), BMI, Glukosespiegel (glu), Blutdruck (bp), familiäre Häufung von Diabetesfällen (ped) und Hautfaltendickemessung am Oberarm (skin) erklärt. Schreibe die Modellgleichung an und interpretiere die Werte der Koeffizienten im Kontext.
@@ -228,38 +694,64 @@ Ermitteln Sie die prädiktive Qualität des Modells mithilfe einer Receiver Oper
 Eine Bevölkerung von Frauen im Alter von mindestens 21 Jahren, von Pima-Indianer-Herkunft und wohnhaft in der Nähe von Phoenix, Arizona, wurde gemäß den Kriterien der Weltgesundheitsorganisation auf Diabetes getestet. Die Daten wurden vom US National Institute of Diabetes and Digestive and Kidney Diseases gesammelt. 
 
 
+Wir wollen für dieses Beispeiel ein logitisches Regressionsmodell entwicklen,d abei es sich bei Diabetis ja/nein um ein nominalsklaierstes Kriterium handelt.     
+
+Im ersten schritt wird die Multikollinearität mittels Scatterplotmatrix überprüft, um etwaige Fehler bei der Modellbildung im Vorhinein auszuschleißen.
+
+
+
+```{r}
+library(pROC)
+library(MASS)
+df <- Pima.tr
+#View(df_secondRemoval)
+ggpairs(df)
+
+```
+Hier wird gleich erkennbar, dass innerhalb der Variablen Multikollinearität besteht, was auch für logitische Regression problematisch sein kann.
+Wie konzentrieren uns hierbei auf Werte um BEreich >0.5 bzw 0.8, bmi - skin (0.659) und age - npreg (0.599) sind die einzigen Variablen, deren Korrelationskoeffizienten in eine kritischen Bereich fallen. Daher hahen wir uns dazu entschieden, skin und npreg aus der dem Modell herauszutrimmen. 
+
+Für die Modlleriung verwenden wir logit-Funktion, die log-Odds der Ergebnisses abbildet. 
+
+
 ```{r}
 library(pROC)
 library(MASS)
 
-data <- Pima.tr
-str(data)
-summary(data)
+
+#summary(data)
 
 df <- data.frame(Pima.tr)
-modell <- glm(type~ .,data=df,family=binomial(link = "logit"))
+modell <- glm(type~ . - npreg - age ,data=df,family=binomial(link = "logit"))
 summary(modell)
+plot(modell)
 
 #neu classification table
-data.predictions <- predict(modell, type = "response")
-classification <- data.frame(response =df$type)
+#data.predictions <- predict(modell, type = "response")
+# classification <- data.frame(response =df$type)
 ```
 
 Mittels der glm Funktion wird ein logistisches Modell aus den Prädikatoren modelliert. Folgendes Modell wird durch die errechneten Koeffizienten beschrieben:
 
-$$type = -9.773062 + (0.04118 * age) + (0.10318 * npreg) + (0.08362 * bmi) + (0.03212 * glu) + (-0.00477 * bp) + (-0.00192 * skin) + (1.82041 * ped)$$
-Die Analyse der Residuenplots entfällt bei einer logistischen Regressionsanalyse. Aus der Summary können die Koeffizienten des Modells abgelesen werden. Hierbei sieht man, dass nur Glucose und der familiäre Hintergrund signifikant sind.
+$$type = -9.296518 + (0.066066  * bmi) + (0.035295 * glu) + (0.015239* bp) + (0.004617  * skin) + (1.459866 * ped)$$
+Die Analyse der Residuenplots entfällt bei einer logistischen Regressionsanalyse. Aus der Summary können die Koeffizienten des Modells abgelesen werden. Hierbei sieht man, dass nur Glucose und der familiäre Hintergrund signifikant sind. 
+Die prädiktive Qualität des Modells wird nun mithile einer ROC Kurve ermittelt.Diese stellt die Ergebnisse der Prädiktion durch das Modell grapfisch dar, wobeei hohe AUC Werte für eine gute Trefferquote sprechen. In unserem Fall beträgt die AUC 0.8205214, was dafür spricht, dass unsere Modell eine gute Vorhersagequalität hat. 
 
 ```{r}
+
+
+#neu classification table
+
+classification <- data.frame(response =df$type)
+View(classification)
 predictions <- predict(modell, type = "response")
 roc_curve <- roc(Pima.tr$type, predictions)
-plot(roc_curve,main ="ROC Kurve -- Logistische Regression")
+plot(roc_curve,main ="ROC Kurve -- Logistische Regression für Moddell zur prädiktion von Diabetis")
 
 auc_value <- auc(roc_curve)
 cat("AUC (Area Under the Curve):", auc_value, "\n")
 ```
-Ein AUC-Wert (Area Under the Curve) von 0.8503, deutet darauf hin, dass die Variable "type" (diabetic yes or no) auch von anderen Variablen abhängt.
-
+Abschließend erstellen wir eine Konfusionsmatrix und Klassifiizieren unsere Daten ausgehend von unserem Modell. Als Treshold setzen wir 0.5
 ```{r}
 #Wir setzen als ja/nein-Kriterium
 
@@ -277,8 +769,12 @@ addmargins(classification.matrix)
 ```
 Zusammenfassend kann man aus der erstellten Tabelle (Konfusionsmatrix) folgende Informationen entnehmen:
 
-True negative = 116 
-True positive = 39 
-False negative = 29 
-False positive = 16
+True negative = 119 
+True positive = 28 
+False negative = 30 
+False positive = 13
 
+Insgesamt ist das Modell also eher spezifisch, und klassifiziert häfiger falsch-negativ als falsch-positiv.
+
+SS24
+Für einenweiterführende Analyse werden wir mit Ridge und LASSO versuchen, ein noch besseres Modell zu bilden. 
