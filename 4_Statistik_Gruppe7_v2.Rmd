@@ -215,7 +215,7 @@ Einkommen korreliert ist und das Einkommen positiv mit der Ausbildung.
 
 #Ergänzung SS24
 
-Ausghehend von unserem einfachen logtischen RFegressionsmodell bilden wir mittels RIDGE und LASSO ebenfalls lineare Regressionsmodelle. 
+Ausghehend von unserem einfachen linearen Regressionsmodell bilden wir mittels Ridge Regression und LASSO ebenfalls lineare Regressionsmodelle. 
 To find a better linear model for our data, we can use Ridge Regression or LASSO.
 Ridge regression works by penalizing the sum of squared coefficients. This also means,
 the coefficients will never be fully discarded, as they won't reach zero.
@@ -227,9 +227,9 @@ In general, RR is used for multicollinear Data, when you want to keep all regres
 while LASSO is used when you want to perform feature selection and only keep relevant coefficients.
 
 Cross validation is then used, to split the data into multiple chunks, and then
-iteratively, some will be used to train the model, while others to test the trained model.
+iteratively, some chunks will be used to train the model, while others to test the trained model.
 The variable which is "trained" is lambda, a factor for the penalty.
-We supply a range of numbers to lambda.
+We supply a range of numbers to lambda to find the optimum.
 
 In the end, a linear model of the parameters is received.
 
@@ -241,7 +241,7 @@ library(glmnet)
 library(dplyr)
 
 swiss_df <- swiss
-lambda.grid <- 10^seq(10, -2, length=100) # 10^10 bis 10^-2 in 100 stufen
+lambda.grid <- 10^seq(4, -12, length=100) # 10^10 bis 10^-2 in 100 stufen
 
 ```
 
@@ -265,13 +265,19 @@ fitRR <- glmnet::glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid) #alpha = zero
 dim(coef(fitRR)) #zur kontrolle, zeigt welche dimensions (inkl. intercept) wir haben
 
 ```
-
+We have 5 coefficients (incl. intercept) for 100 different values of lambda.
 
 **Daten Plotten:**
 ```{r}
 matplot(fitRR$lambda, t(coef(fitRR)[-1, ]), type="l", log="x", main="Ridge Regression Switzerland")
 
 ```
+Auf der Abszisse sind die Werte für Lambda von 10⁻2 bis 10^10 eingetragen, auf der Ordinate
+die Werte der verschiedenen Koeffizienten (ausg. der Achsenabschnitt/Intercept).
+Deutlich sichtbar kovergieren die Werte gegen Null, die Annäherung verlangsamt sich 
+beim annähern an Null jedoch und wird nie erreicht, da bei Ridge Regression der
+Koeffizient quadriert wird.
+
 ### Cross Validation
 ```{r}
 fitRR_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
@@ -283,7 +289,16 @@ plot(fitRR_cv, type="l")
 title("Ridge Regression Switzerland - Cross Validation", line=2.5)
 
 ```
-In the row above the graph, it shows the number of regressors that are kept. So as can be seen here, none of them are discarded.
+In the row above the graph, it shows the number of regressors that are kept. So as can be seen here, none of them are discarded,
+which is typical of ridge regression.
+The red dots/line shows the Mean Squared Error when applying the training data results 
+on the test data. Also the Standard Deviation is shown.
+The left dotted line shows the minimum standard deviation you can get, when applying 
+the resulting linear model to the test data.
+Oftentimes, the right dotted lines is used instead. It is within one Standard Deviation
+of the minimum line and has a higher MSE. The pro of using it, is that it has a 
+higher shrinkage, which means that more of the parameters are down to zero / shrinked.
+
 
 ## Swiss -- LASSO
 ```{r}
