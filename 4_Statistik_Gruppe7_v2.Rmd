@@ -241,7 +241,7 @@ library(glmnet)
 library(dplyr)
 
 swiss_df <- swiss
-lambda.grid <- 10^seq(4, -12, length=100) # 10^10 bis 10^-2 in 100 stufen
+lambda.grid <- 10^seq(8, -4, length=100) # 10^10 bis 10^-2 in 100 stufen
 
 ```
 
@@ -302,6 +302,7 @@ higher shrinkage, which means that more of the parameters are down to zero / shr
 
 ## Swiss -- LASSO
 ```{r}
+
 fitL <- glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # alpha = 1 --> LASSO
 dim(coef(fitL))
 ```
@@ -312,6 +313,9 @@ dim(coef(fitL))
 #Plotten der LASSO
 matplot(fitL$lambda, t(coef(fitL)[-1, ]), type="l", log="x", main="LASSO Switzerland")
 ```
+Compared to the RR, the parameters reach zero much quicker and actually reach it.
+This leads to those coefficients being discarded -- Model selection of LASSO.
+
 
 ### Cross Validation Swiss LASSO
 
@@ -330,7 +334,7 @@ plot(fitL_cv, type="l")
 title("LASSO Switzerland - Cross Validation", line=2.5)
 
 ```
-### Get Coefficients for RR and LASSO Model fit
+## Get Coefficients for RR and LASSO Model fit
 ```{r}
 #for RR
 RRlambda_min <- fitRR_cv$lambda.min # lamda of minimum mean cross-validated error 
@@ -342,12 +346,12 @@ fitRR_1se_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_1se)], 3)
 ```
 Ridge Regression Fit, with lambda of minimum mean cross-validated error
 
-$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+$Education = 49,416 - 0,508 \cdot Fertility - 0,225 \cdot Agriculture + 0,080 \cdot Catholic + 0,269 \cdot Infant Mortality$
 
 Ridge Regression Fit, with largest lambda within 1 std. error of lambda.min
 
 
-$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+$Education = 41,139 - 0,354 \cdot Fertility - 0,174 \cdot Agriculture + 0,038 \cdot Catholic + 0,269 \cdot Infant Mortality$
 
 
 ```{r}
@@ -363,11 +367,12 @@ fitL_1se_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_1se)], 3)
 ```
 LASSO Fit, with lambda of minimum mean cross-validated error
 
-$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+$Education = 49,993 - 0,521 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,284 \cdot Infant Mortality$
 
 LASSO Fit, with largest lambda within 1 std. error of lambda.min **Here, Infant Mortality is discarded as a regressor**
+**See the model selection**, with Infant Mortality and Catholic now missing.
 
-$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+$Education = 30,023 - 0,203 \cdot Fertility - 0,096 \cdot Agriculture$
 
 
 
