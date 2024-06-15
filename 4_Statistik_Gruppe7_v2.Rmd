@@ -465,10 +465,6 @@ Summary:
 Sowohl Intercept als auch alle anderen Regressoren sind statitisch siginifkant. Mit Multiple R-squared:  0.7716 können also 77% der Varianz von Murder durch die Prädikatoren erklärt werden. Mit einem p-value: 8.619e-15 iust das Modell insgesamt statisitsch  hoch signifikant. 
 
 
-
-
-
-
 #Model 2 : lm(formula = Murder ~ . - Illiteracy, data = df_secondRemoval)
 
 
@@ -509,6 +505,8 @@ library(ggplot2)
 library(dplyr)
 library(GGally)
 
+set.seed(123)
+
 usa <- state.x77
 lambda.grid <- 10^seq(10, -2, length=100) # 10^10 bis 10^-2 in 100 stufen
 
@@ -543,25 +541,45 @@ fitRR <- glmnet::glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid) #alpha = zero
 dim(coef(fitRR)) #zur kontrolle, zeigt welche dimensions (inkl. intercept) wir haben
 
 ```
-
+Wir haben nun 8 Coeffizienten (inkl. Intercept)
 
 **Daten Plotten:**
 ```{r}
-matplot(fitRR$lambda, t(coef(fitRR)[-1, ]), type="l", log="x", main="Ridge Regression USA")
+n <- ncol(t(coef(fitRR)[-1, ]))
+col_set <- rainbow(n)
+
+matplot(fitRR$lambda, t(coef(fitRR)[-1, ]), type="l", log="x", main="Ridge Regression USA", ylab = "Coeffizient value", xlab = "log(lambda)", col = col_set, lwd = 2, bg = "black")
+
+
+legend('right',legend = colnames(t(coef(fitRR)[-1, ])), col = col_set, lty = 1:n, lwd = 0.75 )
+
 
 ```
 Zoomed in its possible to see, how the slopes are approaching zero very slowly.
 
 
 ```{r}
-matplot(fitRR$lambda[10:30], t(coef(fitRR)[-1, 10:30]), type="l", log="x", main="Ridge Regression USA")
+n <- ncol(t(coef(fitRR)[-1, ]))
+col_set <- rainbow(n)
+
+matplot(fitRR$lambda[10:30], t(coef(fitRR)[-1, 10:30]), type="l", log="x", main="Ridge Regression USA", ylab = "Coeffizient value", xlab = "log(lambda)", col = col_set, lwd = 2, bg = "black")
+
+
+legend('right',legend = colnames(t(coef(fitRR)[-1, ])), col = col_set, lty = 1:n, lwd = 0.75 )
+
 
 ```
 
 Zooming in even further, the lines are approaching parallel to zero, as they will never reach it:
 
 ```{r}
-matplot(fitRR$lambda[90:100], t(coef(fitRR)[-1, 90:100]), type="l", log="x", main="Ridge Regression USA")
+n <- ncol(t(coef(fitRR)[-1, ]))
+col_set <- rainbow(n)
+
+matplot(fitRR$lambda[90:100], t(coef(fitRR)[-1, 90:100]), type="l", log="x", main="Ridge Regression USA", ylab = "Coeffizient value", xlab = "log(lambda)", col = col_set, lwd = 2, bg = "black")
+
+
+legend('right',legend = colnames(t(coef(fitRR)[-1, ])), col = col_set, lty = 1:n, lwd = 0.75 )
 
 ```
 
@@ -588,9 +606,17 @@ dim(coef(fitL))
 **Plotten**
 ```{r}
 #Plotten der LASSO
-matplot(fitL$lambda, t(coef(fitL)[-1, ]), type="l", log="x", main="LASSO USA")
+n <- ncol(t(coef(fitL)[-1, ]))
+col_set <- rainbow(n)
+
+matplot(fitL$lambda, t(coef(fitL)[-1, ]), type="l", log="x", main="LASSO USA", ylab = "Coeffizient value", xlab = "log(lambda)", col = col_set, lwd = 2, bg = "black")
+
+
+legend('right',legend = colnames(t(coef(fitL)[-1, ])), col = col_set, lty = 1:n, lwd = 0.75 )
+
 ```
 Here it is nice to see, how the slopes are moving to zero, which mean the Regressor will 'disappear'. In comparison to RR, with LASSO, the values reach zero.
+
 ### Cross Validation USA LASSO
 
 ```{r}
@@ -599,36 +625,41 @@ fitL_cv <- cv.glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # cv = Cross Validat
 
 
 ```{r}
-fitRR_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
-fitRR_cv_min <- fitL_cv$lambda.min
-fitRR_cv_1se <- fitL_cv$lambda.1se
+fitL_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitL_cv_min <- fitL_cv$lambda.min
+fitL_cv_1se <- fitL_cv$lambda.1se
 
 #plotting
-plot(fitRR_cv, type="l")
+plot(fitL_cv, type="l")
 title("LASSO USA - Cross Validation", line=2.5)
 
 ```
 
 
-### Get Coefficients for RR and LASSO Model fit
+### Get Coefficients for RR and LASSO Model fit (USA)
+
+**Original linear model**:
+$Murder = 143,5 + 0,0001652 \cdot Population - 1,900 \cdot Life Exp - 0,0270 \cdot Frost$
+
+
 ```{r}
 #for RR
 RRlambda_min <- fitRR_cv$lambda.min #lamda of minimum mean cross-validated error 
 RRlambda_1se <- fitRR_cv$lambda.1se #largest value of lamdalamda such that error is within 1 standard error of the cross-validated errors for lambda.min. 
 
-
 fitRR_min_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_min)], 3)
 fitRR_1se_coef <- round(coef(fitRR)[,which(fitRR$lambda == RRlambda_1se)], 3)
 ```
-Ridge Regression Fit, with lambda of minimum mean cross-validated error
+**Ridge Regression Fit**
+with lambda of minimum mean cross-validated error
 
-$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
+$Murder = 89,439 + 1,263 \cdot Illiteracy - 1,153 \cdot Life Exp - 0,025 \cdot HS Grad -0,012 \cdot Frost$
 
-Ridge Regression Fit, with largest lambda within 1 std. error of lambda.min
+with largest lambda within 1 std. error of lambda.min
 
+$Murder = 64,688 + 1,097 \cdot Illiteracy - 0,787 \cdot Life Exp - 0,038 \cdot HS Grad -0,010 \cdot Frost$
 
-$Education = 49,950 - 0,520 \cdot Fertility - 0,229 \cdot Agriculture + 0,083 \cdot Catholic + 0,283 \cdot Infant Mortality$
-
+  
 
 ```{r}
 #coefficients for LASSO Model fit:
@@ -643,11 +674,15 @@ fitL_1se_coef <- round(coef(fitL)[,which(fitL$lambda == Llambda_1se)], 3)
 ```
 LASSO Fit, with lambda of minimum mean cross-validated error
 
-$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+$Murder = 89,357 + 1,013 \cdot Illiteracy - 1,168 \cdot Life Exp -0,005 \cdot Frost$
 
 LASSO Fit, with largest lambda within 1 std. error of lambda.min **Here, Infant Mortality is discarded as a regressor**
 
-$Education = 49,967 - 0,0.519 \cdot Fertility - 0,0.228 \cdot Agriculture + 0,083 \cdot Catholic + 0,0.279 \cdot Infant Mortality$
+$Education = 49,210 + 0,159 \cdot Illiteracy - 0,593 \cdot Life Exp$
+
+**NOTE:** The coefficients of the cross validation change each time the program runs!
+
+
 
 
 
