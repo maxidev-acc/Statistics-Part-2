@@ -75,6 +75,7 @@ ui <- fluidPage(
                              titlePanel("Aufgabe 3 - State Lake Huron "),
                              
                              #selectInput("downloadStates", "Select Parameter", choices = colnames(LakeHuron)),
+                             checkboxInput("modelforLake", "Abline Lienar Model for Lake Huron", FALSE),
                              plotOutput("distPlot9"),
                              sliderInput("bins3",
                                          "Number of bins for Histogramm:",
@@ -193,12 +194,24 @@ server <- function(input, output) {
     output$distPlot9 <- renderPlot({
       require(utils)
       data(LakeHuron)
+      
+      huron <- data.frame(feet=as.matrix(LakeHuron), date=time(LakeHuron))
+      huron["year"] <- 1875:1972
+      huron <- subset(huron, select = -c(date))
+      model <- lm(formula = feet ~ year, data=huron)
+      
       plot(LakeHuron,  main="Lake Huron Wasserstand über den Zeitraum 1875-1972", xlab="Jahr", ylab="Wasserstand in feet")
+      if (input$modelforLake == TRUE){
+        abline(model, col="green")
+        
+      }
+      
       abline(h=mean(LakeHuron),col=2,lwd=2)
       
       
     })
-      
+    
+  
       
     output$distPlot10 <- renderPlot({
       hist(LakeHuron,freq=F, breaks = input$bins3, main="Lake Huron relativer Wasserstand im Zeitraum 1875-1972", ylab="Relative Verteilung", xlab="Wasserstand in feet")

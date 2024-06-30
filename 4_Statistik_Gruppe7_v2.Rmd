@@ -272,7 +272,7 @@ We have 5 coefficients (incl. intercept) for 100 different values of lambda.
 matplot(fitRR$lambda, t(coef(fitRR)[-1, ]), type="l", log="x", main="Ridge Regression Switzerland")
 
 ```
-Auf der Abszisse sind die Werte für Lambda von 10⁻2 bis 10^10 eingetragen, auf der Ordinate
+Auf der Abszisse sind die Werte für Lambda von 10-2 bis 10^10 eingetragen, auf der Ordinate
 die Werte der verschiedenen Koeffizienten (ausg. der Achsenabschnitt/Intercept).
 Deutlich sichtbar kovergieren die Werte gegen Null, die Annäherung verlangsamt sich 
 beim annähern an Null jedoch und wird nie erreicht, da bei Ridge Regression der
@@ -325,7 +325,7 @@ fitL_cv <- cv.glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # cv = Cross Validat
 
 
 ```{r}
-fitL_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitL_cv <- cv.glmnet(x=X, y=Y, alpha = 1, lambda = lambda.grid)
 fitL_cv_min <- fitL_cv$lambda.min
 fitL_cv_1se <- fitL_cv$lambda.1se
 
@@ -625,7 +625,7 @@ fitL_cv <- cv.glmnet(x=X, y=Y, alpha=1, lambda=lambda.grid) # cv = Cross Validat
 
 
 ```{r}
-fitL_cv <- cv.glmnet(x=X, y=Y, alpha = 0, lambda = lambda.grid)
+fitL_cv <- cv.glmnet(x=X, y=Y, alpha =1,lambda = lambda.grid)
 fitL_cv_min <- fitL_cv$lambda.min
 fitL_cv_1se <- fitL_cv$lambda.1se
 
@@ -832,6 +832,6 @@ False negative = 30
 False positive = 13
 
 Insgesamt ist das Modell also eher spezifisch, und klassifiziert häfiger falsch-negativ als falsch-positiv.
+->Höhere Spezifität als Sensitivität
 
-SS24
-Für einenweiterführende Analyse werden wir mit Ridge und LASSO versuchen, ein noch besseres Modell zu bilden. 
+ 

@@ -16,6 +16,7 @@ Aus dem Testoutput führen Sie den Wert der Teststatistik explizit an und welche
 
 **Aufgabe 1**
 
+
 Ein Labor schickt seine Mitarbeiten zu einem Pipettiertraining und möchte
 anschließend testen, ob sich dieses ausgezahlt hat, indem die mittleren
 Zeiten zur Durchführen von 25 Pipettiervorgängen vor und nach dem
@@ -46,6 +47,7 @@ par(mfrow=c(2, 2)) # Set up the plotting area
 hist(before, main="Histogram of Before Data", xlab="Before")
 
 # Q-Q plot for 'before'
+
 qqnorm(before, main="Q-Q Plot of Before Data")
 qqline(before, col="red")
 boxplot(before)
@@ -274,26 +276,17 @@ Die Teststatistik ist 6,443 mit 19 Freiheitsgraden.
 
 Ergänzung SS24 
 
-Bayes factors
-The Bayes Factor is the ratio of posterior probabilites of parameters under 2 hypotheses.
-BF =
-P[Theta e Theta0|x]
-P[Theta e Theta1|x]
-This is symmetric w.r.t.˜the two hypotheses and on ratio scale, thus BF = 2 can be interpreted as
-H0 is twice as likely as H1. If you want asymmetry you can add weights (i.e.“loss’ ’ when making the
-wrong decision). The decision is then based on k0
-k1
-· B
-Im Zuge der Überarbeitung haben wir uns dazu entschieden, einen Hypothesentest mit dem Bayesfaktor durchzuführen. Dazu haben wir das Paket BayesFactor benutzt. Dabei wird ausgehend von der Verteilung ein Bayesfaktor erstellt, der der Quotienten  P(h0) / P(h1) ist.
-H0 ist hierbei, dass der wahre Mittelwert der Daten zwischen 0.01 und 0.01 liegt, H1 ist, dass der wahre Mittelwert ausserhalb davon liegt.
+Bayesfactor
+Im Zuge der Überarbeitung haben wir uns dazu entschieden, einen Hypothesentest mit dem Bayesfaktor durchzuführen. Dazu haben wir das Paket BayesFactor benutzt. Dabei wird ausgehend von der Verteilung der Baysesfaktor aus der psoterioriverteilung gebildet. Wir testen mit h0 = 0.01.
 
-1] Alt., r=0.707 : 5641.645 ±0% spricht dafür, dass der wahre Mittelwert mit hoher wahrscheinlichekit nicht bei 0.01 liegt. Dadruch decken sich hier unsere Ergebnise mit der Ausarebitung aus dem WS, bei der wir aufgrund des student t-Tests davon ausgegangen sind, dass der Wahre mittelwert ungleich bzw größer als 0.01 ist. 
 
+1] Alt., r=0.707 : 5641.645 ±0% spricht dafür, dass der wahre Mittelwert mit sehr hoher WSL  nicht bei 0.01 liegt. Dadruch decken sich hier unsere Ergebnise mit der Ausarebitung aus dem WS, bei der wir aufgrund des student t-Tests davon ausgegangen sind, dass der Wahre mittelwert ungleich bzw größer als 0.01 ist. 
 
 
 
 ```{r}
-
+library(BayesFactor)
+library(ggplot2)
 data <- c(0.146842, 0.156757, 0.091255, 0.063720, 0.148471,
            -0.045436, 0.150407, 0.077905, 0.077267, 0.026454,
            0.090700, 0.245384, 0.129650, 0.141617, 0.039957,
@@ -344,8 +337,22 @@ Die zu testenden Signifikanz-Niveaus sind 0.05 und 0.01.
 prop.test(413, 696, p = 0.55, alternative = c("two.sided"), conf.level = 0.95, correct = TRUE)
 prop.test(413, 696, p = 0.55, alternative = c("two.sided"), conf.level = 0.99, correct = TRUE)
 ```
+
+
+
+
 Die Teststatistik X-squared ist 5.1207 mit einem Freiheitsgrad (df=1).
 Der p-Wert mit 0.02364 reicht nur aus, das erste Signifikanz-Niveau von 5% zu verwerfen, jedoch nicht jenes mit 1%, die Daten sind daher nur schwach signifikant. Es sind 59.33% der Gene an der Krebsentwicklung beteiligt. Dies ist innerhalb des 95% Konfidenzintervalls welches von 55.57% bis 63.00% reicht, aber außerhalb jenes des 99% KI (54.40% bis 64.10%).
+
+
+
+
+
+
+
+
+
+
 \pagebreak
 
 **Aufgabe 5**
@@ -382,7 +389,7 @@ firma2 <- c(1888.252, 2429.395, 2062.037, 1932.138, 1788.335 ,2119.263,
 print(summary(firma1))
 print(summary(firma2))
 
-hist(firma1, breaks = 9, prob = TRUE)
+hist(firma1, breaks = 20, prob = TRUE)
 lines(density(firma1))
 
 boxplot(firma1, horizontal = TRUE, title = "Firma1")
@@ -395,7 +402,7 @@ qqnorm(firma2)
 qqline(firma2)
 
 
-hist(firma2, breaks = 9, prob = TRUE)
+hist(firma2, breaks = 20, prob = TRUE)
 lines(density(firma2))
 
 #Normalverteilung? Für eine Normalverteilung müsste der Kurtosis-Werte nahe 3 leigen
@@ -415,9 +422,16 @@ Die Alternativhypothese H1 lautet (Gehälter sind unterschiedlich):
 $$H_1: p \ne p0$$ 
 
 
+Wir überprüfen die Testbediongungen. Es handelt sich auf keinen Fall um eine NV, daher prüfen wir, ob die Daten
+  Unimodal sind
+  Ausreißer beinhalten
+  annähernd die gleiche Verteilung haben
+  
+Firma 2 hat am oberen Ende 2 Werte, die aufgrund des Boxplots eher als ausreißer erkennabr sind. Am unteren Ende scheint es einen 2ten Modus zu geben, weshalb die Testbedinung für einen Mann_whitney U test ( unimodal) nciht mehr gegeben ist. 
+Wir verwerfen also unsere Annnahme aus dem WS, hier wilcox.test durchzuführen.
 
-
-Da es sich hierbnei um nicht parametrische Daten handelt und die Verteilung der Daten unterschiedlich ist, und da firma 2 starke ausreißer beinhaltet, kann man hier nicht einfach einenWilcoxon test durchführen. Stattdessen haben wir uns dazu entschieden, eine Bootsreapping Simulation mit Resampling durchzuführen. Dazu haben wir wieder n=1000 genommen und die Erwartete Differenz des Mittelwerts berechnet.
+SS24
+Stattdessen haben wir uns dazu entschieden, eine Bootsreapping Simulation mit Resampling durchzuführen. Dazu haben wir wieder n=1000 genommen und die Erwartete Differenz des Mittelwerts berechnet.
 
 ```{r}
 firma1 <-c(4218.874, 2323.970,
@@ -478,6 +492,11 @@ legend("topright", legend = c("Mean", "95% CI", "99% CI"),
 
 ```
 
-
+Conclusion und Interpretation 
 
 Ausgehend von dem 5% und 1% CI sieht man, dass 0 nicht in der Simulation enthalten ist, die Werte aus der DifferenzenBildung Firma2-Firma1 negativ sind. Daher kann man davon ausgehen, dass Firma 1 das lukrativere Gehalt bietet.
+
+
+
+
+
